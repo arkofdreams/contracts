@@ -32,17 +32,18 @@ module.exports = {
     },
     localhost: {
       url: "http://127.0.0.1:8545",
-      contracts: [process.env.LOCALHOST_CONTRACT_ADDRESS]
+      accounts: [process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_KEY],
+      contracts: [process.env.BLOCKCHAIN_LOCALHOST_CONTRACT_ADDRESS]
     },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-      accounts: [process.env.PREBSC_PRIVATE_KEY],
-      contracts: [process.env.PREBSC_CONTRACT_ADDRESS]
+      accounts: [process.env.BLOCKCHAIN_BSC_TESTNET_PRIVATE_KEY],
+      contracts: [process.env.BLOCKCHAIN_BSC_TESTNET_CONTRACT_ADDRESS]
     },
     bscmainnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-      accounts: [process.env.BSC_PRIVATE_KEY],
-      contracts: [process.env.BSC_CONTRACT_ADDRESS]
+      accounts: [process.env.BLOCKCHAIN_BSC_MAINNET_PRIVATE_KEY],
+      contracts: [process.env.BLOCKCHAIN_BSC_MAINNET_CONTRACT_ADDRESS]
     },
   },
   solidity: {
@@ -66,7 +67,7 @@ module.exports = {
   gasReporter: {
     currency: 'USD',
     token: 'BNB', //comment this out if you want ETH
-    coinmarketcap: process.env.CMC_KEY,
+    coinmarketcap: process.env.BLOCKCHAIN_CMC_KEY,
     gasPrice: 200,
   },
   etherscan: {
