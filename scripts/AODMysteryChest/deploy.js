@@ -10,7 +10,7 @@ async function main() {
   await hre.run('compile')
   const NFT = await hardhat.ethers.getContractFactory('AODMysteryChest')
   const nft = await NFT.deploy(
-    'Ark of Dreams Treasure Chest',
+    'Ark of Dreams Mystery Chest',
     'AODTC',
     contractURI,
     tokenURI

@@ -38,7 +38,7 @@ describe('AODMysteryChest Tests', function () {
     const tokenURI = 'https://ipfs.io/ipfs/QmWhjjSQpBQ7Hmmo4XTLWTXtTqBfuWC4X1vjitdMWp6G8n'
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
-      'Ark of Dreams Treasure Chest',
+      'Ark of Dreams Mystery Chest',
       'AODTC',
       contractURI,
       tokenURI
@@ -92,7 +92,7 @@ describe('AODMysteryChest Tests', function () {
     const tokenURI = 'https://ipfs.io/ipfs/QmWhjjSQpBQ7Hmmo4XTLWTXtTqBfuWC4X1vjitdMWp6G8n'
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
-      'Ark of Dreams Treasure Chest',
+      'Ark of Dreams Mystery Chest',
       'AODTC',
       contractURI,
       tokenURI
@@ -173,7 +173,7 @@ describe('AODMysteryChest Tests', function () {
     const tokenURI = 'https://ipfs.io/ipfs/QmWhjjSQpBQ7Hmmo4XTLWTXtTqBfuWC4X1vjitdMWp6G8n'
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
-      'Ark of Dreams Treasure Chest',
+      'Ark of Dreams Mystery Chest',
       'AODTC',
       contractURI,
       tokenURI
@@ -200,7 +200,7 @@ describe('AODMysteryChest Tests', function () {
     const tokenURI = 'https://ipfs.io/ipfs/QmWhjjSQpBQ7Hmmo4XTLWTXtTqBfuWC4X1vjitdMWp6G8n'
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
-      'Ark of Dreams Treasure Chest',
+      'Ark of Dreams Mystery Chest',
       'AODTC',
       contractURI,
       tokenURI
@@ -216,7 +216,7 @@ describe('AODMysteryChest Tests', function () {
 
     //----------------------------------------//
     // This is the test
-    expect(await contractOwner.withContract.name()).to.equal('Ark of Dreams Treasure Chest')
+    expect(await contractOwner.withContract.name()).to.equal('Ark of Dreams Mystery Chest')
     expect(await contractOwner.withContract.symbol()).to.equal('AODTC')
     expect(await contractOwner.withContract.totalSupply()).to.equal(1)
     expect(await contractOwner.withContract.balanceOf(tokenOwner.address)).to.equal(1)
