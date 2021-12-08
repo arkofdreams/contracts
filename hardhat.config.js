@@ -32,37 +32,17 @@ module.exports = {
     },
     localhost: {
       url: "http://127.0.0.1:8545",
-      accounts: [
-        //0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-        'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-        //we are adding 4 more accounts that will be used in the deploy populate script
-        //0x2546bcd3c84621e976d8185a91a922ae77ecec30
-        'ea6c44ac03bff858b476bba40716402b03e41b8e97e276d1baec7c37d42484a0',
-        //0xbda5747bfd65f08deb54cb465eb87d40e51b197e
-        '689af8efa8c651a91ad287602527f3af2fe9f6501a7ac4b061667b5a93e037fd',
-        //0xdd2fd4581271e230360230f9337d5c0430bf44c0
-        'de9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0',
-        //0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199
-        'df57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e'
-      ],
       contracts: [process.env.LOCALHOST_CONTRACT_ADDRESS]
     },
-    mumbai: {
-      url: "https://rpc-mumbai.maticvigil.com",
-      accounts: [process.env.MUMBAI_PRIVATE_KEY],
-      contracts: [process.env.MUMBAI_CONTRACT_ADDRESS]
+    bsctestnet: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      accounts: [process.env.PREBSC_PRIVATE_KEY],
+      contracts: [process.env.PREBSC_CONTRACT_ADDRESS]
     },
-    ropsten: {
-      url: "https://eth-ropsten.alchemyapi.io/v2/YoNVLItXnYnhbJkzY9PMEAyOYn5dDGpn",
-      accounts: [process.env.ROPSTEN_PRIVATE_KEY],
-      contracts: [process.env.ROPSTEN_CONTRACT_ADDRESS]
-    },
-    polygon: {
-      url: "https://rpc-mainnet.maticvigil.com",
-      accounts: [process.env.POLYGON_PRIVATE_KEY],
-      contracts: [process.env.POLYGON_CONTRACT_ADDRESS],
-      gasPrice: 50000000000,//50 GWEI
-      gasMultiplier: 2
+    bscmainnet: {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      accounts: [process.env.BSC_PRIVATE_KEY],
+      contracts: [process.env.BSC_CONTRACT_ADDRESS]
     },
   },
   solidity: {
@@ -75,7 +55,7 @@ module.exports = {
     }
   },
   paths: {
-    sources: "./src/contracts",
+    sources: "./contracts",
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
@@ -92,6 +72,6 @@ module.exports = {
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: 'ABPFU2QY761DJ5GAE21SA5JST9FMSIQ35M'
+    apiKey: process.env.BLOCKCHAIN_SCANNER_KEY
   }
 };
