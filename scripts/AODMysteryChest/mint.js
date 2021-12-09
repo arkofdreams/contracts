@@ -4,7 +4,7 @@
 const hardhat = require('hardhat')
 
 const tokenId = 1
-const to = '0xD7D190cdC6A7053CD5Ee76E966a1b9056dbA4774'
+const to = ''
 
 async function main() {  
   const NFT = await hardhat.ethers.getContractFactory('AODMysteryChest')

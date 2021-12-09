@@ -39,7 +39,7 @@ describe('AODMysteryChest Tests', function () {
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
       'Ark of Dreams Mystery Chest',
-      'AODTC',
+      'AODMC',
       contractURI,
       tokenURI
     )
@@ -93,7 +93,7 @@ describe('AODMysteryChest Tests', function () {
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
       'Ark of Dreams Mystery Chest',
-      'AODTC',
+      'AODMC',
       contractURI,
       tokenURI
     )
@@ -174,7 +174,7 @@ describe('AODMysteryChest Tests', function () {
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
       'Ark of Dreams Mystery Chest',
-      'AODTC',
+      'AODMC',
       contractURI,
       tokenURI
     )
@@ -201,7 +201,7 @@ describe('AODMysteryChest Tests', function () {
     const [contractOwner, tokenOwner] = await getSigners(
       'AODMysteryChest',
       'Ark of Dreams Mystery Chest',
-      'AODTC',
+      'AODMC',
       contractURI,
       tokenURI
     )
@@ -217,7 +217,7 @@ describe('AODMysteryChest Tests', function () {
     //----------------------------------------//
     // This is the test
     expect(await contractOwner.withContract.name()).to.equal('Ark of Dreams Mystery Chest')
-    expect(await contractOwner.withContract.symbol()).to.equal('AODTC')
+    expect(await contractOwner.withContract.symbol()).to.equal('AODMC')
     expect(await contractOwner.withContract.totalSupply()).to.equal(1)
     expect(await contractOwner.withContract.balanceOf(tokenOwner.address)).to.equal(1)
   })

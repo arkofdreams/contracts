@@ -6,7 +6,7 @@ const winners = require('../../data/AODMysteryChest.winners.json')
 
 function hashToken(tokenId, recipient) {
   return Buffer.from(
-    hardhat.ethers.utils.solidityKeccak256(
+    ethers.utils.solidityKeccak256(
       ['uint256', 'address'],
       [tokenId, recipient]
     ).slice(2),
@@ -24,7 +24,7 @@ async function main() {
   for (let i = 0; i < winners.length; i++) {
     const message = hashToken(i + 1, winners[i])
     const signature = await signer.signMessage(message)
-    console.log(`${winners[i]}, ${signature}`)
+    console.log(`${winners[i]}, ${signature.replace('0', i + 1)}`)
   }
 }
 

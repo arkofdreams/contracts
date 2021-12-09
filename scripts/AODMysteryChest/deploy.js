@@ -11,7 +11,7 @@ async function main() {
   const NFT = await hardhat.ethers.getContractFactory('AODMysteryChest')
   const nft = await NFT.deploy(
     'Ark of Dreams Mystery Chest',
-    'AODTC',
+    'AODMC',
     contractURI,
     tokenURI
   )
