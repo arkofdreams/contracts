@@ -41,7 +41,7 @@ module.exports = {
       contracts: [process.env.BLOCKCHAIN_BSC_TESTNET_CONTRACT_ADDRESS]
     },
     bscmainnet: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      url: "https://bsc-dataseed.binance.org/",
       accounts: [process.env.BLOCKCHAIN_BSC_MAINNET_PRIVATE_KEY],
       contracts: [process.env.BLOCKCHAIN_BSC_MAINNET_CONTRACT_ADDRESS]
     },
