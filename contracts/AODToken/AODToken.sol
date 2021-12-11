@@ -64,10 +64,9 @@ contract AODToken is
   }
 
   /**
-   * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
-   * account that deploys the contract.
-   *
-   * See {ERC20-constructor}.
+   * @dev Sets the name and symbol. Sets the fixed supply. 
+   * Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` 
+   * to the account that deploys the contract.
    */
   constructor() 
     ERC20("Arkonia", "AOD")
@@ -81,18 +80,23 @@ contract AODToken is
     _pause();
   }
 
-  function blackList(address badactor,  bool yesno) public isBanner {
+  /**
+   * @dev Blacklists or whitelists a `badactor` from 
+   * sending or receiving funds 
+   */
+  function blacklist(address badactor,  bool yesno) public isBanner {
 	  _blacklist(badactor, yesno);
   }
 
   /**
+   * @dev Returns true `badactor` is blacklisted
+   */
+  function isBlacklisted(address badactor) public virtual view returns(bool) {
+	  return blacklisted[badactor];
+  }
+
+  /**
    * @dev Creates `amount` new tokens for `to`.
-   *
-   * See {ERC20-_mint}.
-   *
-   * Requirements:
-   *
-   * - the caller must have the `MINTER_ROLE`.
    */
   function mint(address to, uint256 amount) public virtual isMinter {
     _mint(to, amount);
@@ -100,12 +104,6 @@ contract AODToken is
 
   /**
    * @dev Pauses all token transfers.
-   *
-   * See {ERC20Pausable} and {Pausable-_pause}.
-   *
-   * Requirements:
-   *
-   * - the caller must have the `PAUSER_ROLE`.
    */
   function pause() public virtual isPauser {
     _pause();
@@ -113,17 +111,14 @@ contract AODToken is
 
   /**
    * @dev Unpauses all token transfers.
-   *
-   * See {ERC20Pausable} and {Pausable-_unpause}.
-   *
-   * Requirements:
-   *
-   * - the caller must have the `PAUSER_ROLE`.
    */
   function unpause() public virtual isPauser {
     _unpause();
   }
 
+  /**
+   * @dev Checks blacklist before token transfer
+   */
   function _beforeTokenTransfer(
     address from,
     address to,
@@ -144,6 +139,9 @@ contract AODToken is
     super._mint(account, amount);
   }
 
+  /**
+   * @dev Internally blacklists or whitelists a `badactor`
+   */
   function _blacklist(address badactor, bool yesno) internal {
     require(yesno && blacklisted[badactor] != yesno, "Already blacklisted");
     require(!yesno && blacklisted[badactor] != yesno, "Already whitelisted");
