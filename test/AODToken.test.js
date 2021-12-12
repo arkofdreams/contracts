@@ -43,20 +43,21 @@ describe('AODToken Tests', function () {
     const duration = sixMonths * 5
     //release time in unix seconds (6 months)
     const release = now + sixMonths
-    //deploy the smart wallet
-    const smartWallet = await deploy(
-      'AODVestingWallet', 
+    //mint tokens to the smart wallet
+    await owner.withContract.invest(
       investor.address,
+      cap * 0.01,
       start,
       duration,
       release
     )
 
-    //mint tokens to the smart wallet
-    owner.withContract.mint(smartWallet.address, cap * 0.01)
+    //get smart contract address
+    const smartWallet = await owner.withContract.vested(investor.address)
+
     //get functions for the smart wallet
     const factory = await ethers.getContractFactory('AODVestingWallet', owner)
-    const withWallet = await factory.attach(smartWallet.address)
+    const withWallet = await factory.attach(smartWallet)
 
     expect(await withWallet.start()).to.equal(start)
     expect(await withWallet.duration()).to.equal(duration)
@@ -65,22 +66,24 @@ describe('AODToken Tests', function () {
 
     //check how much is in the smart wallet
     expect(
-      await owner.withContract.balanceOf(smartWallet.address)
+      await owner.withContract.balanceOf(smartWallet)
     ).to.equal(1000000000 * 0.01)
 
     //investor should not be able to get anything now
     expect(
+      //test error
       withWallet['release(address)'](tokenAddress)
     ).to.be.revertedWith(
       'Current time is before release time'
     )
-    
-    //unpause and fast forward to 6 months later
-    await owner.withContract.unpause()
+     
+    //fast forward to 6 months later
+    await ethers.provider.send('evm_mine');
     await ethers.provider.send('evm_setNextBlockTimestamp', [release + 1]); 
     await ethers.provider.send('evm_mine');
     //release the funds
-    withWallet['release(address)'](tokenAddress)
+    await withWallet['release(address)'](tokenAddress)
+    
     //check the balance of the investor
     expect(await owner.withContract.balanceOf(investor.address)).to.equal(
       //formula: (1% of max allocation )* (6 months of 2.5 years)
