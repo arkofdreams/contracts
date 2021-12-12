@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
@@ -10,8 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
-
-import "./AODVestingWallet.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -40,7 +37,6 @@ contract AODToken is
   bytes32 public constant VESTER_ROLE = keccak256("VESTER_ROLE");
   
   mapping(address => bool) private _blacklisted;
-  mapping(address => AODVestingWallet) private _vested;
 	
   event Blacklist(address indexed blacklisted, bool yesno);
 
@@ -53,11 +49,12 @@ contract AODToken is
     ERC20("Arkonia", "AOD")
     ERC20Capped(1000000000) 
   {
+    //set up roles for contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-
     _setupRole(BANNER_ROLE, _msgSender());
     _setupRole(MINTER_ROLE, _msgSender());
     _setupRole(PAUSER_ROLE, _msgSender());
+    //prevent unauthorized transfers
     _pause();
   }
 
@@ -66,33 +63,9 @@ contract AODToken is
    * sending or receiving funds 
    */
   function blacklist(address badactor,  bool yesno) 
-    public onlyRole(BANNER_ROLE) 
+    public virtual onlyRole(BANNER_ROLE) 
   {
 	  _blacklist(badactor, yesno);
-  }
-
-  /**
-   * @dev Creates a vesting plan of `amount` for `beneficiary` starting
-   * at `start` for `duration` long with an initial `release` date
-   */
-  function vest(
-    address beneficiary,
-    uint256 amount,
-    uint64 start,
-    uint64 duration,
-    uint256 release
-  ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
-    //make a new wallet and add it to the vested map
-    _vested[beneficiary] = new AODVestingWallet(
-      beneficiary, 
-      start, 
-      duration, 
-      release
-    );
-    //add wallet role
-    _setupRole(VESTER_ROLE, address(_vested[beneficiary]));
-    //next mint tokens to the wallet just created
-    mint(address(_vested[beneficiary]), amount);
   }
 
   /**
@@ -128,15 +101,6 @@ contract AODToken is
   }
 
   /**
-   * @dev Returns the vested smart wallet address of the `beneficiary`
-   */
-  function vested(address beneficiary) 
-    public virtual view returns(address) 
-  {
-    return address(_vested[beneficiary]);
-  }
-
-  /**
    * @dev Checks blacklist before token transfer
    */
   function _beforeTokenTransfer(
@@ -144,11 +108,14 @@ contract AODToken is
     address to,
     uint256 amount
   ) internal virtual override {
-    require(!_blacklisted[msg.sender], "Caller is blacklisted");
+    require(!_blacklisted[_msgSender()], "Caller is blacklisted");
     require(!_blacklisted[from], "Sender is blacklisted");
     require(!_blacklisted[to], "Recipient is blacklisted");
 
-    if (!hasRole(MINTER_ROLE, msg.sender) && !hasRole(VESTER_ROLE, from)) {
+    if (!hasRole(MINTER_ROLE, _msgSender())
+      && !hasRole(MINTER_ROLE, from) 
+      && !hasRole(VESTER_ROLE, from)
+    ) {
       require(!paused(), "Token transfer while paused");
     }
 
@@ -158,7 +125,7 @@ contract AODToken is
   /**
    * @dev Internally blacklists or whitelists a `badactor`
    */
-  function _blacklist(address badactor, bool yesno) internal {
+  function _blacklist(address badactor, bool yesno) internal virtual {
     require(yesno && _blacklisted[badactor] != yesno, "Already blacklisted");
     require(!yesno && _blacklisted[badactor] != yesno, "Already whitelisted");
     _blacklisted[badactor] = yesno;
