@@ -4,11 +4,11 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
 import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -26,9 +26,9 @@ import "@openzeppelin/contracts/utils/Context.sol";
  */
 contract AODToken is 
   Context, 
+  Pausable,
   AccessControlEnumerable, 
   ERC20Burnable, 
-  ERC20Pausable,
   ERC20Capped 
 {
   bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
@@ -123,11 +123,24 @@ contract AODToken is
     address from,
     address to,
     uint256 amount
-  ) internal virtual override(ERC20, ERC20Pausable) {
+  ) internal virtual override {
     require(!blacklisted[msg.sender], "Caller is blacklisted");
     require(!blacklisted[from], "Sender is blacklisted");
     require(!blacklisted[to], "Recipient is blacklisted");
     super._beforeTokenTransfer(from, to, amount);
+  }
+
+  /**
+   * @dev Moves `amount` of tokens from `sender` to `recipient`. 
+   * Checks for paused
+   */
+  function _transfer(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) internal virtual override {
+    require(!paused(), "Token transfer while paused");
+    super._transfer(sender, recipient, amount);
   }
 
   /**
