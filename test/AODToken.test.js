@@ -44,7 +44,7 @@ describe('AODToken Tests', function () {
     //release time in unix seconds (6 months)
     const release = now + sixMonths
     //mint tokens to the smart wallet
-    await owner.withContract.invest(
+    await owner.withContract.vest(
       investor.address,
       cap * 0.01,
       start,
