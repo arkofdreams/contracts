@@ -34,12 +34,12 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   IERC20 public BUSD;
   //a data struct for a sale stage
   struct Stage {
-    uint64 endDate;
     uint64 startDate;
-    uint64 releaseDate;
+    uint64 releaseDuration;
     uint64 vestingDuration;
     uint256 tokenPrice;
     uint256 maxQuantity;
+    uint256 allocated;
   }
   //list of sale stages
   Stage[] private _stages;
@@ -63,48 +63,53 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   /**
    * @dev Adds a stage
    */
-  function add(
-    uint64 endDate,
+  function addStage(
     uint64 startDate,
-    uint64 releaseDate,
+    uint64 releaseDuration,
     uint64 vestingDuration,
     uint256 tokenPrice,
     uint256 maxQuantity
-  ) public virtual {
+  ) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     require(tokenPrice > 0, "Token must have a price");
     _stages.push(Stage(
-      endDate, 
       startDate, 
-      releaseDate, 
+      releaseDuration, 
       vestingDuration, 
       tokenPrice, 
-      maxQuantity
+      maxQuantity,
+      0
     ));
   }
 
   /**
    * @dev Returns the current stage
    */
-  function current() public view returns(Stage memory) {
-    Stage memory currentStage;
+  function currentStage() public view returns(Stage memory) {
+    Stage memory stage;
+    uint64 endDate;
     for (uint i = 0; i < _stages.length; i++) {
+      endDate = _stages[i].startDate + _stages[i].vestingDuration;
       if (_stages[i].startDate <= block.timestamp 
-        && block.timestamp <= _stages[i].endDate
+        && block.timestamp <= endDate
       ) {
-        currentStage = _stages[i];
+        stage = _stages[i];
         break;
       }
     }
 
-    return currentStage;
+    return stage;
   }
 
   /**
    * @dev Allows anyone to invest during the current stage for an `amount`
    */
   function invest(uint256 amount) external virtual {
-    Stage memory stage = current();
+    Stage memory stage = currentStage();
     require(stage.tokenPrice > 0, "Not for sale");
+    require(
+      (stage.allocated + amount) <= stage.maxQuantity, 
+      "Amount exceeds the max allocation"
+    );
     //us first :)
     SafeERC20.safeTransfer(BUSD, _fund, amount);
     address beneficiary = _msgSender();
@@ -113,7 +118,7 @@ contract AODTokenSale is Context, AccessControlEnumerable {
       beneficiary, 
       stage.startDate, 
       stage.vestingDuration, 
-      stage.releaseDate
+      stage.releaseDuration
     );
     //add wallet role
     address(AOD).functionCall(
@@ -133,6 +138,8 @@ contract AODTokenSale is Context, AccessControlEnumerable {
       ), 
       "Low-level mint failed"
     );
+    //add amount to the allocated
+    stage.allocated += amount;
   }
 
   /**
@@ -141,14 +148,18 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   function vest(address beneficiary, uint256 amount) 
     public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
   {
-    Stage memory stage = current();
+    Stage memory stage = currentStage();
     require(stage.tokenPrice > 0, "Not for sale");
+    require(
+      (stage.allocated + amount) <= stage.maxQuantity, 
+      "Amount exceeds the max allocation"
+    );
     //make a new wallet and add it to the vested map
     _vested[beneficiary] = new AODVestingWallet(
       beneficiary, 
       stage.startDate, 
       stage.vestingDuration, 
-      stage.releaseDate
+      stage.releaseDuration
     );
     //add wallet role
     address(AOD).functionCall(
@@ -168,6 +179,8 @@ contract AODTokenSale is Context, AccessControlEnumerable {
       ), 
       "Low-level mint failed"
     );
+    //add amount to the allocated
+    stage.allocated += amount;
   }
 
   /**
@@ -182,7 +195,7 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   function _convertToAOD(uint256 fromBUSDAmount) 
     internal view returns(uint256) 
   {
-    Stage memory stage = current();
+    Stage memory stage = currentStage();
     require(stage.tokenPrice > 0, "Not for sale");
     //ex. 1 BUSD / 0.05 BUSD = 20 AOD
     return fromBUSDAmount / stage.tokenPrice;

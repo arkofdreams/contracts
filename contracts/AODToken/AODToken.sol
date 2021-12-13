@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
@@ -14,15 +13,16 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
  * @dev {ERC20} token, including:
  *
  *  - ability for holders to burn (destroy) their tokens
+ *  - ability to blacklist addresses
  *  - a minter role that allows for token minting (creation)
  *  - a pauser role that allows to stop all token transfers
  *
- * This contract uses {AccessControl} to lock permissioned functions using the
- * different roles - head to its documentation for details.
+ * This contract uses {AccessControl} to lock permissioned functions 
+ * using the different roles.
  *
- * The account that deploys the contract will be granted the minter and pauser
- * roles, as well as the default admin role, which will let it grant both minter
- * and pauser roles to other accounts.
+ * The account that deploys the contract will be granted the minter, 
+ * banner and pauser roles, as well as the default admin role, which 
+ * will let it grant both minter and pauser roles to other accounts.
  */
 contract AODToken is 
   Context, 
@@ -31,13 +31,14 @@ contract AODToken is
   ERC20Burnable, 
   ERC20Capped 
 {
+  //all custom roles
   bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
   bytes32 public constant VESTER_ROLE = keccak256("VESTER_ROLE");
-  
+  //mapping of address to blacklisted
   mapping(address => bool) private _blacklisted;
-	
+	//blacklist evennt
   event Blacklist(address indexed blacklisted, bool yesno);
 
   /**
@@ -49,11 +50,12 @@ contract AODToken is
     ERC20("Arkonia", "AOD")
     ERC20Capped(1000000000) 
   {
+    address sender = _msgSender();
     //set up roles for contract creator
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    _setupRole(BANNER_ROLE, _msgSender());
-    _setupRole(MINTER_ROLE, _msgSender());
-    _setupRole(PAUSER_ROLE, _msgSender());
+    _setupRole(DEFAULT_ADMIN_ROLE, sender);
+    _setupRole(BANNER_ROLE, sender);
+    _setupRole(MINTER_ROLE, sender);
+    _setupRole(PAUSER_ROLE, sender);
     //prevent unauthorized transfers
     _pause();
   }
@@ -89,7 +91,7 @@ contract AODToken is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE)  {
+  function pause() public virtual onlyRole(PAUSER_ROLE) {
     _pause();
   }
 

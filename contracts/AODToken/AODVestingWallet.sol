@@ -16,9 +16,9 @@ contract AODVestingWallet is VestingWallet {
     address beneficiary,
     uint64 start,
     uint64 duration,
-    uint256 releaseTime_
+    uint64 _release
   ) VestingWallet(beneficiary, start, duration) {
-    _releaseTime = releaseTime_;
+    _releaseTime = start + _release;
   }
 
   /**
