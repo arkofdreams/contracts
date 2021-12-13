@@ -10,20 +10,27 @@ risk.
 
 The contracts defined here are to allow auditors to evaluate the code 
 that are being developed and specifically for the purpose of the Ark of
-Dreams project. These contracts cover the following business phases.
+Dreams project. These contracts features cover the following business 
+phases.
 
- 1. Mystery Chest - A basic BEP721
+ 1. Mystery Chest - BEP721
     - Admin minting
     - Lazy minting
- 2. Mystery Pets - A basic BEP721
-    - Provably fair lazy rolling
+ 2. Mystery Pets - BEP1155
     - Conversion from Mystery Chest to Mystery Pets
- 3. AODToken
-    - Basic BEP20
+    - Token Sale Contract
+      - Provably fair lazy rolling
+      - Define different floor prices per stage
+ 3. Land Titles - BEP1155
+    - Token Sale Contract
+      - Provably fair lazy rolling
+      - Define different floor prices per stage
+ 4. AOD Token - BEP20
+    - Blacklisting
     - Token Sale Contract
       - Define different stages
       - Creates vesting wallets
-    - Vesting Wallet
+    - Vesting Wallet Contract
       - Start Date
       - Locked Duration
       - Vested Duration
