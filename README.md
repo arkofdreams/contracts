@@ -30,6 +30,7 @@ phases.
     - Token Sale Contract
       - Define different stages
       - Creates vesting wallets
+      - Accepts BUSD
     - Vesting Wallet Contract
       - Start Date
       - Locked Duration
