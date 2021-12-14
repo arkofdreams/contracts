@@ -63,7 +63,7 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   /**
    * @dev Adds a stage
    */
-  function addStage(
+  function add(
     uint64 startDate,
     uint64 releaseDuration,
     uint64 vestingDuration,
@@ -82,43 +82,61 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   }
 
   /**
-   * @dev Returns the current stage
+   * @dev Returns the current stage index
    */
-  function currentStage() public view returns(Stage memory) {
-    Stage memory stage;
+  function current() public view returns(uint) {
     uint64 endDate;
     for (uint i = 0; i < _stages.length; i++) {
       endDate = _stages[i].startDate + _stages[i].vestingDuration;
       if (_stages[i].startDate <= block.timestamp 
         && block.timestamp <= endDate
       ) {
-        stage = _stages[i];
-        break;
+        return i + 1;
       }
     }
 
+    return 0;
+  }
+
+  /**
+   * @dev Returns the current stage data
+   */
+  function info() public view returns(Stage memory) {
+    Stage memory stage;
+    uint index = current();
+    if (index > 0) {
+      stage = _stages[index - 1];
+    }
     return stage;
   }
 
   /**
    * @dev Allows anyone to invest during the current stage for an `amount`
    */
-  function invest(uint256 amount) external virtual {
-    Stage memory stage = currentStage();
-    require(stage.tokenPrice > 0, "Not for sale");
+  function buy(uint256 aodAmount) external virtual {
+    uint stage = current();
+    require(stage > 0, "Not for sale");
     require(
-      (stage.allocated + amount) <= stage.maxQuantity, 
+      (_stages[stage - 1].allocated + aodAmount) <= _stages[stage - 1].maxQuantity, 
       "Amount exceeds the max allocation"
     );
-    //us first :)
-    SafeERC20.safeTransfer(BUSD, _fund, amount);
+    //calculate busd amount
+    uint256 busdAmount = (aodAmount * _stages[stage - 1].tokenPrice) / 1 ether;
+    require(busdAmount > 0, "Amount is too small");
     address beneficiary = _msgSender();
+    //us first :)
+    require(
+      BUSD.allowance(beneficiary, address(this)) >= busdAmount, 
+      "Contract not approved to transfer BUSD"
+    );
+    SafeERC20.safeTransferFrom(BUSD, beneficiary, _fund, busdAmount);
+    
     //make a new wallet and add it to the vested map
     _vested[beneficiary] = new AODVestingWallet(
       beneficiary, 
-      stage.startDate, 
-      stage.vestingDuration, 
-      stage.releaseDuration
+      _stages[stage - 1].startDate, 
+      _stages[stage - 1].vestingDuration, 
+      _stages[stage - 1].releaseDuration
     );
     //add wallet role
     address(AOD).functionCall(
@@ -134,12 +152,12 @@ contract AODTokenSale is Context, AccessControlEnumerable {
       abi.encodeWithSelector(
         AOD.mint.selector, 
         address(_vested[beneficiary]), 
-        amount
+        aodAmount
       ), 
       "Low-level mint failed"
     );
     //add amount to the allocated
-    stage.allocated += amount;
+    _stages[stage - 1].allocated += aodAmount;
   }
 
   /**
@@ -148,18 +166,19 @@ contract AODTokenSale is Context, AccessControlEnumerable {
   function vest(address beneficiary, uint256 amount) 
     public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
   {
-    Stage memory stage = currentStage();
-    require(stage.tokenPrice > 0, "Not for sale");
+    uint stage = current();
+    require(stage > 0, "Not for sale");
     require(
-      (stage.allocated + amount) <= stage.maxQuantity, 
+      (_stages[stage - 1].allocated + amount) <= _stages[stage - 1].maxQuantity, 
       "Amount exceeds the max allocation"
     );
+
     //make a new wallet and add it to the vested map
     _vested[beneficiary] = new AODVestingWallet(
       beneficiary, 
-      stage.startDate, 
-      stage.vestingDuration, 
-      stage.releaseDuration
+      _stages[stage - 1].startDate, 
+      _stages[stage - 1].vestingDuration, 
+      _stages[stage - 1].releaseDuration
     );
     //add wallet role
     address(AOD).functionCall(
@@ -180,7 +199,7 @@ contract AODTokenSale is Context, AccessControlEnumerable {
       "Low-level mint failed"
     );
     //add amount to the allocated
-    stage.allocated += amount;
+    _stages[stage - 1].allocated += amount;
   }
 
   /**
@@ -190,14 +209,5 @@ contract AODTokenSale is Context, AccessControlEnumerable {
     public virtual view returns(address) 
   {
     return address(_vested[beneficiary]);
-  }
-
-  function _convertToAOD(uint256 fromBUSDAmount) 
-    internal view returns(uint256) 
-  {
-    Stage memory stage = currentStage();
-    require(stage.tokenPrice > 0, "Not for sale");
-    //ex. 1 BUSD / 0.05 BUSD = 20 AOD
-    return fromBUSDAmount / stage.tokenPrice;
   }
 }

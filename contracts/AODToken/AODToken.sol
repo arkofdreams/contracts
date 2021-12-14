@@ -48,7 +48,7 @@ contract AODToken is
    */
   constructor() 
     ERC20("Arkonia", "AOD")
-    ERC20Capped(1000000000) 
+    ERC20Capped(1000000000 ether) 
   {
     address sender = _msgSender();
     //set up roles for contract creator
