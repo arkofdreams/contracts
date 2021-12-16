@@ -33,17 +33,41 @@ module.exports = {
     localhost: {
       url: "http://127.0.0.1:8545",
       accounts: [process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_KEY],
-      contracts: [process.env.BLOCKCHAIN_LOCALHOST_CONTRACT_ADDRESS]
+      wallets: {
+        fund: process.env.BLOCKCHAIN_LOCALHOST_FUND_ADDRESS
+      },
+      contracts: [
+        process.env.BLOCKCHAIN_LOCALHOST_MYSTERY_CHEST_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_TOKEN_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_BUSD_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_TOKEN_SALE_ADDRESS
+      ]
     },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       accounts: [process.env.BLOCKCHAIN_BSC_TESTNET_PRIVATE_KEY],
-      contracts: [process.env.BLOCKCHAIN_BSC_TESTNET_CONTRACT_ADDRESS]
+      wallets: {
+        fund: process.env.BLOCKCHAIN_BSC_TESTNET_FUND_ADDRESS
+      },
+      contracts: [
+        process.env.BLOCKCHAIN_BSC_TESTNET_MYSTERY_CHEST_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_TESTNET_TOKEN_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_TESTNET_BUSD_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_TESTNET_TOKEN_SALE_ADDRESS
+      ]
     },
     bscmainnet: {
       url: "https://bsc-dataseed.binance.org/",
       accounts: [process.env.BLOCKCHAIN_BSC_MAINNET_PRIVATE_KEY],
-      contracts: [process.env.BLOCKCHAIN_BSC_MAINNET_CONTRACT_ADDRESS]
+      wallets: {
+        fund: process.env.BLOCKCHAIN_BSC_MAINNET_FUND_ADDRESS
+      },
+      contracts: [
+        process.env.BLOCKCHAIN_BSC_MAINNET_MYSTERY_CHEST_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_MAINNET_TOKEN_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_MAINNET_BUSD_ADDRESS,
+        process.env.BLOCKCHAIN_BSC_MAINNET_TOKEN_SALE_ADDRESS
+      ]
     },
   },
   solidity: {
