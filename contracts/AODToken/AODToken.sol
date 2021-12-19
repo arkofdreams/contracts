@@ -35,7 +35,6 @@ contract AODToken is
   bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  bytes32 public constant VESTER_ROLE = keccak256("VESTER_ROLE");
   //mapping of address to blacklisted
   mapping(address => bool) private _blacklisted;
 	//blacklist evennt
@@ -114,10 +113,7 @@ contract AODToken is
     require(!_blacklisted[from], "Sender is blacklisted");
     require(!_blacklisted[to], "Recipient is blacklisted");
 
-    if (!hasRole(MINTER_ROLE, _msgSender())
-      && !hasRole(MINTER_ROLE, from) 
-      && !hasRole(VESTER_ROLE, from)
-    ) {
+    if (!hasRole(MINTER_ROLE, _msgSender()) && !hasRole(MINTER_ROLE, from)) {
       require(!paused(), "Token transfer while paused");
     }
 
