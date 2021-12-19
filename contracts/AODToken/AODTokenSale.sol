@@ -124,14 +124,15 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     uint256 busdAmount = (aodAmount * stages[stage - 1].tokenPrice) / 1 ether;
     require(busdAmount > 0, "Amount is too small");
     address beneficiary = _msgSender();
-    //start vesting
-    _vest(beneficiary, aodAmount, busdAmount);
-    //now accept the payment
+    //check allowance
     require(
       BUSD.allowance(beneficiary, address(this)) >= busdAmount, 
       "Contract not approved to transfer BUSD"
     );
+    //now accept the payment
     SafeERC20.safeTransferFrom(BUSD, beneficiary, _fund, busdAmount);
+    //last start vesting
+    _vest(beneficiary, aodAmount, busdAmount);
   }
 
   /**
