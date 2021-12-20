@@ -43,7 +43,7 @@ module.exports = {
         process.env.BLOCKCHAIN_LOCALHOST_TOKEN_SALE_ADDRESS
       ]
     },
-    bsctestnet: {
+    testnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       accounts: [process.env.BLOCKCHAIN_BSC_TESTNET_PRIVATE_KEY],
       wallets: {
@@ -56,7 +56,7 @@ module.exports = {
         process.env.BLOCKCHAIN_BSC_TESTNET_TOKEN_SALE_ADDRESS
       ]
     },
-    bscmainnet: {
+    mainnet: {
       url: "https://bsc-dataseed.binance.org/",
       accounts: [process.env.BLOCKCHAIN_BSC_MAINNET_PRIVATE_KEY],
       wallets: {

@@ -97,3 +97,15 @@ project and could change based on the cost of `BNB` itself.
 |  BUSDToken                      ·          -  ·          -  ·    1254969  ·       10.1 %  ·     135.44  │
 ·---------------------------------|-------------|-------------|-------------|---------------|-------------·
 </pre>
+
+## 4. Faucets
+
+ - https://testnet.venus.io/faucet
+ - https://testnet.binance.org/faucet-smart
+
+## 5. Verifying Contracts
+
+```bash
+$ npx hardhat verify --network mainnet DEPLOYED_TOKEN_CONTRACT_ADDRESS
+$ npx hardhat verify --network mainnet DEPLOYED_TOKEN_SALE_CONTRACT_ADDRESS "AOD_CONTRACT_ADDRESS" "BUSD_CONTRACT_ADDRESS" "FUND_WALLET_ADDRESS"
+```

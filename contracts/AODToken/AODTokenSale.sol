@@ -18,35 +18,47 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   //so we can invoke mint function in vest and invest
   using Address for address;
   event ERC20Released(address indexed token, uint256 amount);
-  //the timestamp of the token generated event
-  uint64 public tokenGeneratedEvent;
   //this is where the BUSD will go
   address private _fund;
   //these are the tokens we are swapping
   IAOD public AOD;
   IERC20 public BUSD;
-  //a data struct for a sale stage
-  struct Stage {
-    uint64 startDate;
-    uint64 vestedDate;
-    uint64 lockPeriod;
-    uint256 tokenPrice;
-    uint256 lockedTokens;
-    uint256 vestedTokens;
-    uint256 allocated;
-  }
+
+  //token sale start date (when to start accepting entries)
+  uint64 public startDate;
+  //token sale end date (when to stop accepting entries)
+  uint64 public endDate;
+  //the timestamp when all accounts are fully vested
+  uint64 public vestedDate;
+  //the timestamp of the token generated event
+  uint64 public tokenGeneratedEvent;
+  //the lock period to be applied after the token generated event
+  //(after the lock period accounts can now withdraw)
+  uint64 public lockPeriod;
+  //the BUSD price per AOD token
+  uint256 public tokenPrice;
+  //the total possoble locked AOD tokens that are allocated for this sale
+  uint256 public totalPossibleLockedTokens;
+  //the total possoble vested AOD tokens that are allocated for this sale
+  uint256 public totalPossibleVestedTokens;
+  //the total AOD tokens that are currently allocated
+  uint256 public currentlyAllocated;
+  
   //a data struct for an account
   struct Account {
+    //the amount of BUSD they used to purchase AOD
     uint256 busdAmount;
+    //the amount of AOD tokens locked
     uint256 lockedTokens;
+    //the amount of AOD tokens vesting
     uint256 vestingTokens;
+    //the amount of AOD tokens already released
     uint256 releasedTokens;
-    uint16 tokenSaleStage;
+    //whether if they already unlocked a token
     bool unlocked;
+    //patch for a quirk to determine an account vs the default values
     bool active;
   }
-
-  Stage[2] public stages;
 
   //mapping of address to token sale stage
   mapping(address => Account) public accounts;
@@ -55,7 +67,18 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
    * @dev sets the tokens `aod` and `busd` to be swapped. Grants 
    * `DEFAULT_ADMIN_ROLE` to the account that deploys the contract.
    */
-  constructor(address aod, address busd, address fund) {
+  constructor(
+    address aod, 
+    address busd, 
+    address fund,
+    uint64 _startDate,
+    uint64 _endDate,
+    uint64 _vestedDate,
+    uint64 _lockPeriod,
+    uint256 _tokenPrice,
+    uint256 _lockedTokens,
+    uint256 _vestedTokens
+  ) {
     //set up roles for the contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     //set the fund address
@@ -63,42 +86,14 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     //set the AOD and BUSD interface
     AOD = IAOD(aod);
     BUSD = IERC20(busd);
-    //add private sale stage
-    stages[0] = Stage(
-      //Start Date - Dec 21, 2021
-      1640016000, 
-      //Vested Date - June 21, 2024
-      1718899200, 
-      //Lock Period - 6 months
-      15552000, 
-      //BUSD per AOD
-      0.025 ether, 
-      //Tokens for locked period
-      5000000 ether, 
-      //Tokens given when fully vested
-      45000000 ether, 
-      //NOTE: ether is a unit of measurement to express wei
-      //total amount currently allocated
-      0
-    );
-    //add presale stage
-    stages[1] = Stage(
-      //Start Date - Jan 17, 2022
-      1642348800, 
-      //Vested Date - April 21, 2024
-      1713632400,  
-      //Lock Period - 3 months
-      7776000, 
-      //BUSD per AOD
-      0.05 ether, 
-      //Tokens for locked period
-      5000000 ether, 
-      //Tokens given when fully vested
-      45000000 ether,
-      //NOTE: ether is a unit of measurement to express wei
-      //total amount currently allocated
-      0
-    );
+
+    startDate = _startDate;
+    endDate = _endDate;
+    vestedDate = _vestedDate;
+    lockPeriod = _lockPeriod;
+    tokenPrice = _tokenPrice;
+    totalPossibleLockedTokens = _lockedTokens;
+    totalPossibleVestedTokens = _vestedTokens;
   }
 
   /**
@@ -116,12 +111,10 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   function buy(uint256 aodAmount) external virtual nonReentrant {
     //check if aodAmount
     require(aodAmount > 0, "AOD amount missing");
-    //get current stage
-    uint16 stage = current();
     //check for valid stage
-    require(stage > 0, "Not for sale");
+    require(canVest(), "Not for sale");
     //calculate busd amount
-    uint256 busdAmount = (aodAmount * stages[stage - 1].tokenPrice) / 1 ether;
+    uint256 busdAmount = (aodAmount * tokenPrice) / 1 ether;
     require(busdAmount > 0, "Amount is too small");
     address beneficiary = _msgSender();
     //check allowance
@@ -136,17 +129,11 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   }
 
   /**
-   * @dev Returns the current stage index
+   * @dev Returns true if user can vest
    */
-  function current() public view returns(uint16) {
-    //iterate reversely
-    for (uint16 i = uint16(stages.length) - 1; i >= 0; i--) {
-      if (stages[i].startDate <= block.timestamp) {
-        return i + 1;
-      }
-    }
-
-    return 0;
+  function canVest() public view returns(bool) {
+    uint64 timenow = uint64(block.timestamp);
+    return startDate <= timenow && timenow <= endDate;
   }
 
   /**
@@ -181,13 +168,13 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   /**
    * @dev Triggers the TGE
    */
-  function trigger() public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
+  function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
   {
     require(
       tokenGeneratedEvent == 0, 
       "Token generation event already triggered"
     );
-    tokenGeneratedEvent = uint64(block.timestamp);
+    tokenGeneratedEvent = timestamp;
   }
 
   /**
@@ -199,12 +186,8 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   {
     uint amount = totalVestedAmount(beneficiary, timestamp);
     if (tokenGeneratedEvent > 0) {
-      //get the beneficiary account info
-      Account memory _account = accounts[beneficiary];
-      //get the beneficiary stage info
-      Stage memory stage = stages[_account.tokenSaleStage - 1];
       //the unlock date should be after the lock period
-      uint64 unlockDate = tokenGeneratedEvent + stage.lockPeriod;
+      uint64 unlockDate = tokenGeneratedEvent + lockPeriod;
       //if the time is greater than the unlock date
       if (timestamp >= unlockDate) {
         amount += accounts[beneficiary].lockedTokens;
@@ -228,22 +211,20 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     } 
     //get the beneficiary account info
     Account memory _account = accounts[beneficiary];
-    //get the beneficiary stage info
-    Stage memory stage = stages[_account.tokenSaleStage - 1];
     //if time now is more than the vesteddate
-    if (timestamp > stage.vestedDate) {
+    if (timestamp > vestedDate) {
       //release all the tokens
       return _account.vestingTokens;
     }
     //the start clock should be after the lock period
-    uint64 start = tokenGeneratedEvent + stage.lockPeriod;
+    uint64 start = tokenGeneratedEvent + lockPeriod;
     //if time is less than the start clock
     if (timestamp < start) {
       //no tokens releasable
       return 0;
     }
     //determine the vesting duration in seconds
-    uint64 duration = stage.vestedDate - start;
+    uint64 duration = vestedDate - start;
     //determine the elapsed time that has passed
     uint64 elapsed = timestamp - start;
     //this is the max possible tokens we can release
@@ -257,6 +238,8 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   function vest(address beneficiary, uint256 aodAmount) 
     public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
   {
+    //check for valid stage
+    require(canVest(), "Not for sale");
     _vest(beneficiary, aodAmount, 0); 
   }
 
@@ -273,14 +256,10 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     require(!accounts[beneficiary].active, "Beneficiary already vested");
     //check if aodAmount
     require(aodAmount > 0, "AOD amount missing");
-    //get current stage
-    uint16 stage = current();
-    //check for valid stage
-    require(stage > 0, "Not for sale");
     //calc max tokens that can be allocated
-    uint256 maxAllocation = stages[stage - 1].lockedTokens + stages[stage - 1].vestedTokens;
+    uint256 maxAllocation = totalPossibleLockedTokens + totalPossibleVestedTokens;
     require(
-      (stages[stage - 1].allocated + aodAmount) <= maxAllocation, 
+      (currentlyAllocated + aodAmount) <= maxAllocation, 
       "Amount exceeds the available allocation"
     );
     //split the AOD amount by 10%
@@ -291,8 +270,7 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
       busdAmount,
       lockedTokens,
       vestingTokens,
-      0, stage,
-      false, true
+      0, false, true
     );
 
     //next mint tokens to the wallet just created
@@ -301,6 +279,6 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
       "Low-level mint failed"
     );
     //add amount to the allocated
-    stages[stage - 1].allocated += aodAmount;
+    currentlyAllocated += aodAmount;
   }
 }

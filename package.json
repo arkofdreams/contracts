@@ -1,5 +1,5 @@
 {
-  "name": "demo",
+  "name": "aod-contracts",
   "private": true,
   "scripts": {
     "test": "hardhat test"
