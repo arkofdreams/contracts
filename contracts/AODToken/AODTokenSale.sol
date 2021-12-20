@@ -45,6 +45,9 @@ contract AODTokenSale is
   uint64 public lockPeriod;
   //the BUSD price per AOD token
   uint256 public tokenPrice;
+  //the min/max BUSD that can be used to purchase AOD
+  uint256 public minimumBUSDAmount;
+  uint256 public maximumBUSDAmount;
   //the total possoble locked AOD tokens that are allocated for this sale
   uint256 public totalPossibleLockedTokens;
   //the total possoble vested AOD tokens that are allocated for this sale
@@ -84,6 +87,8 @@ contract AODTokenSale is
     uint64 _vestedDate,
     uint64 _lockPeriod,
     uint256 _tokenPrice,
+    uint256 _minimumBUSDAmount,
+    uint256 _maximumBUSDAmount,
     uint256 _lockedTokens,
     uint256 _vestedTokens
   ) {
@@ -91,6 +96,9 @@ contract AODTokenSale is
     require(_endDate > _startDate, "End date should be greater than start date");
     require(_vestedDate > _endDate, "Vested date should be greater than end date");
     require(_lockPeriod > 0, "Lock period should be greater than zero");
+    require(_tokenPrice > 0, "Token price should be greater than zero");
+    require(_minimumBUSDAmount > 0, "Minimum BUSD amount should be greater than zero");
+    require(_maximumBUSDAmount > _minimumBUSDAmount, "Maximum BUSD amount should be greater than the minimum BUSD amount");
     require(_lockedTokens > 0, "Locked tokens should be greater than zero");
     require(_vestedTokens > 0, "Vested tokens should be greater than zero");
 
@@ -109,6 +117,8 @@ contract AODTokenSale is
     vestedDate = _vestedDate;
     lockPeriod = _lockPeriod;
     tokenPrice = _tokenPrice;
+    minimumBUSDAmount = _minimumBUSDAmount;
+    maximumBUSDAmount = _maximumBUSDAmount;
     totalPossibleLockedTokens = _lockedTokens;
     totalPossibleVestedTokens = _vestedTokens;
   }
@@ -132,7 +142,8 @@ contract AODTokenSale is
     require(canVest(), "Not for sale");
     //calculate busd amount
     uint256 busdAmount = (aodAmount * tokenPrice) / 1 ether;
-    require(busdAmount > 0, "Amount is too small");
+    require(busdAmount > minimumBUSDAmount, "Amount is too small");
+    require(busdAmount < maximumBUSDAmount, "Amount is too large");
     address beneficiary = _msgSender();
     //check allowance
     require(

@@ -25,6 +25,10 @@ contract AODPrivateSale is AODTokenSale {
   //the BUSD price per AOD token
   //NOTE: ether is a unit of measurement to express wei
   uint256 constant public TOKEN_PRICE = 0.025 ether;
+
+  //the min/max BUSD that can be used to purchase AOD
+  uint256 constant public MINIMUM_BUSD_AMOUNT = 2500 ether;
+  uint256 constant public MAXIMUM_BUSD_AMOUNT = 15000 ether;
   
   //the total possoble locked AOD tokens that are allocated for this sale
   uint256 constant public TOTAL_POSSIBLE_LOCKED_TOKENS =  5000000 ether;
@@ -41,6 +45,8 @@ contract AODPrivateSale is AODTokenSale {
     VESTED_DATE, 
     LOCK_PERIOD, 
     TOKEN_PRICE, 
+    MINIMUM_BUSD_AMOUNT,
+    MAXIMUM_BUSD_AMOUNT,
     TOTAL_POSSIBLE_LOCKED_TOKENS, 
     TOTAL_POSSIBLE_VESTED_TOKENS
   ) {}

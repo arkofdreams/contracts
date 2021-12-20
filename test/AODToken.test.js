@@ -114,16 +114,16 @@ describe('AODToken Tests', function () {
       vestingTokens: cap.mul(2).div(100).mul(9).div(10)
     }
     investor3.vestment = {
-      aodAmount: cap.mul(2).div(100),
-      busdAmount: cap.mul(2).div(100).mul(25).div(1000), //0.0025
-      lockedTokens: cap.mul(2).div(100).mul(1).div(10),
-      vestingTokens: cap.mul(2).div(100).mul(9).div(10)
+      aodAmount: ethers.utils.parseEther('400000'),
+      busdAmount: ethers.utils.parseEther('10000'), //0.0025
+      lockedTokens: ethers.utils.parseEther('400000').div(10),
+      vestingTokens: ethers.utils.parseEther('400000').mul(9).div(10)
     }
     investor4.vestment = {
-      aodAmount: cap.mul(1).div(100),
-      busdAmount: cap.mul(1).div(100).mul(25).div(1000), //0.0025
-      lockedTokens: cap.mul(1).div(100).mul(1).div(10),
-      vestingTokens: cap.mul(1).div(100).mul(9).div(10)
+      aodAmount: ethers.utils.parseEther('800000'),
+      busdAmount: ethers.utils.parseEther('20000'), //0.0025
+      lockedTokens: ethers.utils.parseEther('20000').div(10),
+      vestingTokens: ethers.utils.parseEther('20000').mul(9).div(10)
     }
 
     investor5.vestment = {
@@ -137,16 +137,16 @@ describe('AODToken Tests', function () {
       vestingTokens: cap.mul(2).div(100).mul(9).div(10)
     }
     investor7.vestment = {
-      aodAmount: cap.mul(2).div(100),
-      busdAmount: cap.mul(2).div(100).mul(5).div(100), //0.05
-      lockedTokens: cap.mul(2).div(100).mul(1).div(10),
-      vestingTokens: cap.mul(2).div(100).mul(9).div(10)
+      aodAmount: ethers.utils.parseEther('10000'),
+      busdAmount: ethers.utils.parseEther('500'), //0.05
+      lockedTokens: ethers.utils.parseEther('10000').div(10),
+      vestingTokens: ethers.utils.parseEther('10000').mul(9).div(10)
     }
     investor8.vestment = {
-      aodAmount: cap.mul(1).div(100),
-      busdAmount: cap.mul(1).div(100).mul(5).div(100), //0.05
-      lockedTokens: cap.mul(1).div(100).mul(1).div(10),
-      vestingTokens: cap.mul(1).div(100).mul(9).div(10)
+      aodAmount: ethers.utils.parseEther('20'),
+      busdAmount: ethers.utils.parseEther('1'), //0.05
+      lockedTokens: ethers.utils.parseEther('20').div(10),
+      vestingTokens: ethers.utils.parseEther('20').mul(9).div(10)
     }
 
     this.signers = {
@@ -242,19 +242,43 @@ describe('AODToken Tests', function () {
     expect(await owner.busdToken.balanceOf(owner.address)).to.equal(investor3.vestment.busdAmount)
   })
 
-  it('Should error when investor buys again in private sale', async function () {
+  it('Should error when investor buys again in presale', async function () {
     const { owner, investor3 } = this.signers
+
+    //mint some BUSD to investor
+    await owner.busdToken.mint(investor3.address, investor3.vestment.busdAmount)
+    
+    expect(
+      await owner.busdToken.balanceOf(investor3.address)
+    ).to.equal(investor3.vestment.busdAmount)
+    //allow the token sale to transfer funds
+    await investor3.busdToken.approve(
+      investor3.priSale.address, 
+      investor3.vestment.busdAmount
+    );
+
     await expect(
-      owner.priSale.vest(investor3.address, investor3.vestment.aodAmount)
+      investor3.priSale.buy(investor3.vestment.aodAmount)
     ).to.be.revertedWith('Beneficiary already vested')
   })
-
-  it('Should error when buying more than allocated in private sale', async function () {
+  
+  it('Should error when buying above the limit in presale', async function () {
     const { owner, investor4 } = this.signers
+
+    //mint some BUSD to investor
     await owner.busdToken.mint(investor4.address, investor4.vestment.busdAmount)
+    expect(
+      await owner.busdToken.balanceOf(investor4.address)
+    ).to.equal(investor4.vestment.busdAmount)
+    //allow the token sale to transfer funds
+    await investor4.busdToken.approve(
+      investor4.priSale.address, 
+      investor4.vestment.busdAmount
+    );
+    
     await expect(
-      owner.priSale.vest(investor4.address, investor4.vestment.aodAmount)
-    ).to.be.revertedWith('Amount exceeds the available allocation')
+      investor4.priSale.buy(investor4.vestment.aodAmount)
+    ).to.be.revertedWith('Amount is too large')
   })
 
   it('Should time travel to Jan 17, 2022', async function () {  
@@ -340,17 +364,41 @@ describe('AODToken Tests', function () {
   
   it('Should error when investor buys again in presale', async function () {
     const { owner, investor7 } = this.signers
+
+    //mint some BUSD to investor
+    await owner.busdToken.mint(investor7.address, investor7.vestment.busdAmount)
+    
+    expect(
+      await owner.busdToken.balanceOf(investor7.address)
+    ).to.equal(investor7.vestment.busdAmount)
+    //allow the token sale to transfer funds
+    await investor7.busdToken.approve(
+      investor7.preSale.address, 
+      investor7.vestment.busdAmount
+    );
+
     await expect(
-      owner.preSale.vest(investor7.address, investor7.vestment.aodAmount)
+      investor7.preSale.buy(investor7.vestment.aodAmount)
     ).to.be.revertedWith('Beneficiary already vested')
   })
   
-  it('Should error when buying more than allocated in presale', async function () {
+  it('Should error when buying below the limit in presale', async function () {
     const { owner, investor8 } = this.signers
+
+    //mint some BUSD to investor
     await owner.busdToken.mint(investor8.address, investor8.vestment.busdAmount)
+    expect(
+      await owner.busdToken.balanceOf(investor8.address)
+    ).to.equal(investor8.vestment.busdAmount)
+    //allow the token sale to transfer funds
+    await investor8.busdToken.approve(
+      investor8.preSale.address, 
+      investor8.vestment.busdAmount
+    );
+    
     await expect(
-      owner.preSale.vest(investor8.address, investor8.vestment.aodAmount)
-    ).to.be.revertedWith('Amount exceeds the available allocation')
+      investor8.preSale.buy(investor8.vestment.aodAmount)
+    ).to.be.revertedWith('Amount is too small')
   })
   
   it('Should trigger token generting event', async function () {
