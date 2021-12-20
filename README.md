@@ -29,12 +29,8 @@ phases.
     - Blacklisting
     - Token Sale Contract
       - Define different stages
-      - Creates vesting wallets
+      - Creates vesting accounts
       - Accepts BUSD
-    - Vesting Wallet Contract
-      - Start Date
-      - Locked Duration
-      - Vested Duration
 
 ## 1. Install
 
