@@ -39,7 +39,8 @@ module.exports = {
       contracts: [
         process.env.BLOCKCHAIN_LOCALHOST_MYSTERY_CHEST_ADDRESS,
         process.env.BLOCKCHAIN_LOCALHOST_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_TOKEN_SALE_ADDRESS
+        process.env.BLOCKCHAIN_LOCALHOST_TOKEN_SALE_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS
       ]
     },
     testnet: {
@@ -52,7 +53,8 @@ module.exports = {
         process.env.BLOCKCHAIN_TESTNET_MYSTERY_CHEST_ADDRESS,
         process.env.BLOCKCHAIN_TESTNET_TOKEN_ADDRESS,
         process.env.BLOCKCHAIN_TESTNET_PRIVATE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS
+        process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS
       ]
     },
     mainnet: {
@@ -65,7 +67,8 @@ module.exports = {
         process.env.BLOCKCHAIN_MAINNET_MYSTERY_CHEST_ADDRESS,
         process.env.BLOCKCHAIN_MAINNET_TOKEN_ADDRESS,
         process.env.BLOCKCHAIN_MAINNET_PRIVATE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS
+        process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS,
+        process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS
       ]
     },
   },
