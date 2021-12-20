@@ -5,9 +5,9 @@ pragma solidity ^0.8.0;
 import "./AODTokenSale.sol";
 
 contract AODPrivateSale is AODTokenSale {
-  //Start Date - Dec 21, 2021 (GMT)
+  //Start Date - Dec 22, 2021 (GMT)
   //token sale start date (when to start accepting entries)
-  uint64 constant public START_DATE = 1640044800;
+  uint64 constant public START_DATE = 1640131200;
   
   //End Date - Jan 16, 2022 (GMT)
   //token sale end date (when to stop accepting entries)

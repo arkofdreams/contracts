@@ -8,13 +8,21 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
-contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
+contract AODTokenSale is 
+  Context, 
+  Pausable, 
+  AccessControlEnumerable, 
+  ReentrancyGuard 
+{
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
   //so we can invoke mint function in vest and invest
   using Address for address;
   event ERC20Released(address indexed token, uint256 amount);
@@ -79,8 +87,17 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     uint256 _lockedTokens,
     uint256 _vestedTokens
   ) {
+    require(_startDate > 0, "Start date is out of bounds");
+    require(_endDate > _startDate, "End date should be greater than start date");
+    require(_vestedDate > _endDate, "Vested date should be greater than end date");
+    require(_lockPeriod > 0, "Lock period should be greater than zero");
+    require(_lockedTokens > 0, "Locked tokens should be greater than zero");
+    require(_vestedTokens > 0, "Vested tokens should be greater than zero");
+
     //set up roles for the contract creator
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    address sender = _msgSender();
+    _setupRole(DEFAULT_ADMIN_ROLE, sender);
+    _setupRole(PAUSER_ROLE, sender);
     //set the fund address
     _fund = fund;
     //set the AOD and BUSD interface
@@ -137,11 +154,19 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
   }
 
   /**
+   * @dev Pauses all token transfers.
+   */
+  function pause() public virtual onlyRole(PAUSER_ROLE) {
+    _pause();
+  }
+
+  /**
    * @dev Release the tokens that have already vested.
    *
    * Emits a {TokensReleased} event.
    */
   function release() public virtual nonReentrant {
+    require(!paused(), "Releasing while paused");
     //wait for tge
     require(tokenGeneratedEvent > 0, "Token generation event not triggered yet");
     address beneficiary = _msgSender();
@@ -173,6 +198,11 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     require(
       tokenGeneratedEvent == 0, 
       "Token generation event already triggered"
+    );
+
+    require(
+      startDate <= timestamp && timestamp <= vestedDate, 
+      "Timestamp out of bounds"
     );
     tokenGeneratedEvent = timestamp;
   }
@@ -211,7 +241,7 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     } 
     //get the beneficiary account info
     Account memory _account = accounts[beneficiary];
-    //if time now is more than the vesteddate
+    //if time now is more than the vested date
     if (timestamp > vestedDate) {
       //release all the tokens
       return _account.vestingTokens;
@@ -230,6 +260,13 @@ contract AODTokenSale is Context, AccessControlEnumerable, ReentrancyGuard {
     //this is the max possible tokens we can release
     //total vesting tokens * elapsed / duration
     return (_account.vestingTokens * elapsed) / duration;
+  }
+
+  /**
+   * @dev Unpauses all token transfers.
+   */
+  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+    _unpause();
   }
 
   /**

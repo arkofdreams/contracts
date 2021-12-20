@@ -66,8 +66,8 @@ function getRole(name) {
 const cap = ethers.utils.parseEther('1000000000')
 const stages = {
   pri: {
-    //Start Date - Dec 21, 2021
-    start: 1640044800, 
+    //Start Date - Dec 22, 2021
+    start: 1640131200, 
     //Vested Date - June 21, 2024
     vested: 1718928000, 
     //Lock Period - 6 months

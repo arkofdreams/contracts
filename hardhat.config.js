@@ -39,34 +39,33 @@ module.exports = {
       contracts: [
         process.env.BLOCKCHAIN_LOCALHOST_MYSTERY_CHEST_ADDRESS,
         process.env.BLOCKCHAIN_LOCALHOST_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_BUSD_ADDRESS,
         process.env.BLOCKCHAIN_LOCALHOST_TOKEN_SALE_ADDRESS
       ]
     },
     testnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-      accounts: [process.env.BLOCKCHAIN_BSC_TESTNET_PRIVATE_KEY],
+      accounts: [process.env.BLOCKCHAIN_TESTNET_PRIVATE_KEY],
       wallets: {
-        fund: process.env.BLOCKCHAIN_BSC_TESTNET_FUND_ADDRESS
+        fund: process.env.BLOCKCHAIN_TESTNET_FUND_ADDRESS
       },
       contracts: [
-        process.env.BLOCKCHAIN_BSC_TESTNET_MYSTERY_CHEST_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_TESTNET_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_TESTNET_BUSD_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_TESTNET_TOKEN_SALE_ADDRESS
+        process.env.BLOCKCHAIN_TESTNET_MYSTERY_CHEST_ADDRESS,
+        process.env.BLOCKCHAIN_TESTNET_TOKEN_ADDRESS,
+        process.env.BLOCKCHAIN_TESTNET_PRIVATE_SALE_ADDRESS,
+        process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS
       ]
     },
     mainnet: {
       url: "https://bsc-dataseed.binance.org/",
-      accounts: [process.env.BLOCKCHAIN_BSC_MAINNET_PRIVATE_KEY],
+      accounts: [process.env.BLOCKCHAIN_MAINNET_PRIVATE_KEY],
       wallets: {
-        fund: process.env.BLOCKCHAIN_BSC_MAINNET_FUND_ADDRESS
+        fund: process.env.BLOCKCHAIN_MAINNET_FUND_ADDRESS
       },
       contracts: [
-        process.env.BLOCKCHAIN_BSC_MAINNET_MYSTERY_CHEST_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_MAINNET_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_MAINNET_BUSD_ADDRESS,
-        process.env.BLOCKCHAIN_BSC_MAINNET_TOKEN_SALE_ADDRESS
+        process.env.BLOCKCHAIN_MAINNET_MYSTERY_CHEST_ADDRESS,
+        process.env.BLOCKCHAIN_MAINNET_TOKEN_ADDRESS,
+        process.env.BLOCKCHAIN_MAINNET_PRIVATE_SALE_ADDRESS,
+        process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS
       ]
     },
   },

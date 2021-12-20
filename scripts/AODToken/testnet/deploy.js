@@ -1,5 +1,5 @@
 //to run this on testnet:
-// $ npx hardhat run scripts/AODToken/deployTestnetSale.js
+// $ npx hardhat run scripts/AODToken/testnet/deploy.js
 
 const hardhat = require('hardhat')
 
@@ -15,12 +15,13 @@ function getRole(name) {
 
 }
 
-async function deploy(aod, busd, fund) {
+async function deploy(...args) {
   const TokenSale = await hardhat.ethers.getContractFactory('AODTestnetSale')
-  const sale = await TokenSale.deploy(aod, busd, fund)
+  const sale = await TokenSale.deploy(...args)
   await sale.deployed()
 
   console.log('Token Sale contract deployed to (update .env):', sale.address)
+  console.log('Token Sale args:', args)
 
   return sale;
 }
@@ -49,10 +50,16 @@ async function main() {
 
   const network = hardhat.config.networks[hardhat.config.defaultNetwork]
 
+  const now = Math.floor(Date.now() / 1000)
+
   const sale = await deploy(
     network.contracts[1], //aod
-    network.contracts[2], //busd
-    network.wallet.fund
+    '0x8301f2213c0eed49a7e28ae4c3e91722919b8b47', //busd
+    '0xf036E404a2780fa46958e4a131d3B67855d3cA11', //fund wallet
+    now + (60 * 10), //start
+    now + (60 * 20), //end
+    60 * 10,
+    now + (60 * 60), //vested
   )
 
   const provider = new hardhat.ethers.providers.JsonRpcProvider(network.url)
