@@ -42,6 +42,11 @@ async function grant(role, aod, sale, provider) {
 async function main() {
   await hre.run('compile')
 
+  if (hardhat.config.defaultNetwork != 'testnet') {
+    console.error('This script can only run in testnet')
+    process.exit(1);
+  }
+
   const network = hardhat.config.networks[hardhat.config.defaultNetwork]
 
   const sale = await deploy(
