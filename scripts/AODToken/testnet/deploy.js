@@ -55,7 +55,7 @@ async function main() {
   const sale = await deploy(
     network.contracts[1], //aod
     '0x8301f2213c0eed49a7e28ae4c3e91722919b8b47', //busd
-    '0xf036E404a2780fa46958e4a131d3B67855d3cA11', //fund wallet
+    network.contracts[4], //fund wallet
     now + (60 * 10), //start
     now + (60 * 20), //end
     60 * 10,

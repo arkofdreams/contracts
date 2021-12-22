@@ -142,8 +142,8 @@ contract AODTokenSale is
     require(canVest(), "Not for sale");
     //calculate busd amount
     uint256 busdAmount = (aodAmount * tokenPrice) / 1 ether;
-    require(busdAmount > minimumBUSDAmount, "Amount is too small");
-    require(busdAmount < maximumBUSDAmount, "Amount is too large");
+    require(busdAmount >= minimumBUSDAmount, "Amount is too small");
+    require(busdAmount <= maximumBUSDAmount, "Amount is too large");
     address beneficiary = _msgSender();
     //check allowance
     require(

@@ -46,8 +46,8 @@ async function main() {
 
   const sale = await deploy(
     network.contracts[1], //aod
-    '0x4Fabb145d64652a948d72533023f6E7A623C7C53', //busd
-    '0xC883A864Fd40d94472d11F0fE3C307775Ad9a4F2' //fund
+    '0x8301f2213c0eed49a7e28ae4c3e91722919b8b47', //busd
+    network.contracts[4] //fund
   )
 
   const provider = new hardhat.ethers.providers.JsonRpcProvider(network.url)
