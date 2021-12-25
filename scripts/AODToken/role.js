@@ -14,3 +14,5 @@ function getRole(name) {
 
 console.log(getRole('REQUESTER_ROLE'))
 console.log(getRole('APPROVER_ROLE'))
+console.log(getRole('PAUSER_ROLE'))
+console.log(getRole('BANNER_ROLE'))
