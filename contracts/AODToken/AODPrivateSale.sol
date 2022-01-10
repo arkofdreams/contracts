@@ -27,7 +27,7 @@ contract AODPrivateSale is AODTokenSale {
   uint256 constant public TOKEN_PRICE = 0.025 ether;
 
   //the min/max BUSD that can be used to purchase AOD
-  uint256 constant public MINIMUM_BUSD_AMOUNT = 2500 ether;
+  uint256 constant public MINIMUM_BUSD_AMOUNT = 500 ether;
   uint256 constant public MAXIMUM_BUSD_AMOUNT = 15000 ether;
   
   //the total possoble locked AOD tokens that are allocated for this sale

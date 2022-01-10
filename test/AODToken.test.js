@@ -80,8 +80,8 @@ const stages = {
     vestedTokens: ethers.utils.parseEther('45000000')
   },
   pre: {
-    //Start Date - Jan 17, 2022
-    start: 1642377600, 
+    //Start Date - March 1, 2022
+    start: 1646092800, 
     //Vested Date - April 21, 2024
     vested: 1713657600,  
     //Lock Period - 3 months
@@ -154,12 +154,6 @@ describe('AODToken Tests', function () {
       investor1, investor2, investor3, investor4, 
       investor5, investor6, investor7, investor8
     }
-  })
-
-  it('Should time travel to Dec 21, 2021', async function () {  
-    await ethers.provider.send('evm_mine');
-    await ethers.provider.send('evm_setNextBlockTimestamp', [stages.pri.start]); 
-    await ethers.provider.send('evm_mine');
   })
 
   it('Should be able to vest in private sale', async function () {
@@ -240,6 +234,8 @@ describe('AODToken Tests', function () {
 
     //check if owner has busd
     expect(await owner.busdToken.balanceOf(owner.address)).to.equal(investor3.vestment.busdAmount)
+    //check if token sale has busd
+    expect(await owner.busdToken.balanceOf(owner.priSale.address)).to.equal(0)
   })
 
   it('Should error when investor buys again in presale', async function () {
