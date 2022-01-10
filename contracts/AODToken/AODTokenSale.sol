@@ -292,6 +292,26 @@ contract AODTokenSale is
   }
 
   /**
+   * @dev This contract should not hold any funds in the first place. 
+   * This method exists to transfer out stuck funds.
+   */
+  function emergencyTransfer(address to, uint256 amount) 
+    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
+  {
+    Address.sendValue(payable(to), amount);
+  }
+
+  /**
+   * @dev This contract should not hold any funds in the first place. 
+   * This method exists to transfer out stuck funds.
+   */
+  function emergencyERC20Transfer(address erc20, address to, uint256 amount) 
+    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
+  {
+    SafeERC20.safeTransfer(IERC20(erc20), to, amount);
+  }
+
+  /**
    * @dev Vest a `beneficiary` for an `aodAmount` and track how much
    * `busdAmount` was paid
    */
@@ -319,12 +339,6 @@ contract AODTokenSale is
       lockedTokens,
       vestingTokens,
       0, false, true
-    );
-
-    //next mint tokens to the wallet just created
-    address(AOD).functionCall(
-      abi.encodeWithSelector(AOD.mint.selector, address(this), aodAmount), 
-      "Low-level mint failed"
     );
     //add amount to the allocated
     currentlyAllocated += aodAmount;
