@@ -51,7 +51,7 @@ async function main() {
   )
 
   const provider = new hardhat.ethers.providers.JsonRpcProvider(network.url)
-  const Token = await hardhat.ethers.getContractFactory('AODPrivateSale')
+  const Token = await hardhat.ethers.getContractFactory('AODToken')
   const token = await Token.attach(network.contracts[1])
 
   await grant('MINTER_ROLE', token, sale, provider)
