@@ -12,7 +12,8 @@ function getRole(name) {
   ).toString('hex')
 }
 
-console.log(getRole('REQUESTER_ROLE'))
-console.log(getRole('APPROVER_ROLE'))
-console.log(getRole('PAUSER_ROLE'))
-console.log(getRole('BANNER_ROLE'))
+console.log('REQUESTER_ROLE', getRole('REQUESTER_ROLE'))
+console.log('APPROVER_ROLE', getRole('APPROVER_ROLE'))
+console.log('MINTER_ROLE', getRole('MINTER_ROLE'))
+console.log('PAUSER_ROLE', getRole('PAUSER_ROLE'))
+console.log('BANNER_ROLE', getRole('BANNER_ROLE'))
