@@ -46,7 +46,7 @@ async function main() {
 
   const sale = await deploy(
     network.contracts[1], //aod
-    '0x8301f2213c0eed49a7e28ae4c3e91722919b8b47', //busd
+    '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56', //busd
     network.contracts[4] //fund
   )
 

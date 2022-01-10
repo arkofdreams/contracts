@@ -5,13 +5,13 @@ pragma solidity ^0.8.0;
 import "./AODTokenSale.sol";
 
 contract AODPresale is AODTokenSale {
-  //Start Date - Jan 17, 2022 (GMT)
+  //Start Date - March 1, 2022 (GMT)
   //token sale start date (when to start accepting entries)
-  uint64 constant public START_DATE = 1642377600;
+  uint64 constant public START_DATE = 1646092800;
   
-  //End Date - Jan 24, 2022 (GMT)
+  //End Date - March 31, 2022 (GMT)
   //token sale end date (when to stop accepting entries)
-  uint64 constant public END_DATE = 1642982400;
+  uint64 constant public END_DATE = 1648684800;
   
   //Vested Date - April 21, 2024 (GMT)
   //the timestamp when all accounts are fully vested

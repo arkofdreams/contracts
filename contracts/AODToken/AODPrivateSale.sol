@@ -9,9 +9,9 @@ contract AODPrivateSale is AODTokenSale {
   //token sale start date (when to start accepting entries)
   uint64 constant public START_DATE = 1640131200;
   
-  //End Date - Jan 16, 2022 (GMT)
+  //End Date - Jan 31, 2022 (GMT)
   //token sale end date (when to stop accepting entries)
-  uint64 constant public END_DATE = 1642291200;
+  uint64 constant public END_DATE = 1643587200;
   
   //Vested Date - June 21, 2024
   //the timestamp when all accounts are fully vested
