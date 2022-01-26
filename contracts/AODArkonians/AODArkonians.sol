@@ -38,10 +38,10 @@ contract AODArkonians is
   uint64 constant public LOCK_PERIOD = 15552000;
   
   //the total possoble locked AOD tokens that are allocated for this sale
-  uint256 constant public TOTAL_POSSIBLE_LOCKED_TOKENS =  5000000 ether;
+  uint256 constant public TOTAL_POSSIBLE_LOCKED_TOKENS =  90000000 ether;
   
   //the total possoble vested AOD tokens that are allocated for this sale
-  uint256 constant public TOTAL_POSSIBLE_VESTED_TOKENS = 45000000 ether;
+  uint256 constant public TOTAL_POSSIBLE_VESTED_TOKENS = 10000000 ether;
   
   // ============ Events ============
 
