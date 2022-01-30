@@ -28,9 +28,9 @@ contract AODArkonians is
   
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-  //Vested Date - June 21, 2024
+  //Vested Date - April 21, 2024 (GMT)
   //the timestamp when all accounts are fully vested
-  uint64 constant public VESTED_DATE = 1718928000;
+  uint64 constant public VESTED_DATE = 1713657600;
   
   //Lock Period - 6 months
   //the lock period to be applied after the token generated event

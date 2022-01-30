@@ -108,4 +108,5 @@ project and could change based on the cost of `BNB` itself.
 ```bash
 $ npx hardhat verify --network mainnet DEPLOYED_TOKEN_CONTRACT_ADDRESS
 $ npx hardhat verify --network mainnet DEPLOYED_TOKEN_SALE_CONTRACT_ADDRESS "AOD_CONTRACT_ADDRESS" "BUSD_CONTRACT_ADDRESS" "FUND_WALLET_ADDRESS"
+$ npx hardhat verify --network testnet DEPLOYED_ARKONIANS_CONTRACT_ADDRESS "AOD_CONTRACT_ADDRESS"
 ```
