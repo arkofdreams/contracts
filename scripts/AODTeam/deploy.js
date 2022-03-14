@@ -16,7 +16,7 @@ function getRole(name) {
 }
 
 async function deploy(aod) {
-  const Contract = await hardhat.ethers.getContractFactory('AODArkonians')
+  const Contract = await hardhat.ethers.getContractFactory('AODTeam')
   const contract = await Contract.deploy(aod)
   await contract.deployed()
 

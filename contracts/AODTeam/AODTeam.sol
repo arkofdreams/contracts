@@ -15,7 +15,7 @@ interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
-contract AODArkonians is 
+contract AODTeam is 
   Context, 
   Pausable, 
   AccessControlEnumerable, 

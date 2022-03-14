@@ -50,7 +50,7 @@ describe('AODMysteryPets Tests', function () {
   it('Should not mint', async function () {
     const { tokenOwner1 } = this.signers
     await expect(
-      tokenOwner1.withContract.mint(3, { value: ethers.utils.parseEther('0.15') })
+      tokenOwner1.withContract.mint(3, { value: ethers.utils.parseEther('0.12') })
     ).to.be.revertedWith('Sale has not started')
   })
   
@@ -61,9 +61,9 @@ describe('AODMysteryPets Tests', function () {
     ).to.be.revertedWith('URI query for nonexistent token')
   })
 
-  it('Should time travel to April 1, 2022', async function () {  
+  it('Should time travel to Feb 14, 2022', async function () {  
     await ethers.provider.send('evm_mine');
-    await ethers.provider.send('evm_setNextBlockTimestamp', [1648771200]); 
+    await ethers.provider.send('evm_setNextBlockTimestamp', [1644796800]); 
     await ethers.provider.send('evm_mine');
   })
 

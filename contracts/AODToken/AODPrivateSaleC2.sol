@@ -1,0 +1,53 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.0;
+
+import "./AODTokenSale.sol";
+
+contract AODPrivateSaleC2 is AODTokenSale {
+  //Start Date - Feb 03, 2022 (MNL)
+  //token sale start date (when to start accepting entries)
+  uint64 constant public START_DATE = 1643817600;
+  
+  //End Date - Feb 09, 2022 (MNL)
+  //token sale end date (when to stop accepting entries)
+  uint64 constant public END_DATE = 1644336000;
+  
+  //Vested Date - June 21, 2024
+  //the timestamp when all accounts are fully vested
+  uint64 constant public VESTED_DATE = 1718928000;
+  
+  //Lock Period - 6 months
+  //the lock period to be applied after the token generated event
+  //(after the lock period accounts can now withdraw)
+  uint64 constant public LOCK_PERIOD = 15552000;
+  
+  //the BUSD price per AOD token
+  //NOTE: ether is a unit of measurement to express wei
+  uint256 constant public TOKEN_PRICE = 0.025 ether;
+
+  //the min/max BUSD that can be used to purchase AOD
+  uint256 constant public MINIMUM_BUSD_AMOUNT = 500 ether;
+  uint256 constant public MAXIMUM_BUSD_AMOUNT = 15000 ether;
+  
+  //the total possoble locked AOD tokens that are allocated for this sale
+  uint256 constant public TOTAL_POSSIBLE_LOCKED_TOKENS =  5000000 ether;
+  
+  //the total possoble vested AOD tokens that are allocated for this sale
+  uint256 constant public TOTAL_POSSIBLE_VESTED_TOKENS = 45000000 ether;
+
+  constructor(address aod, address busd, address fund) AODTokenSale(
+    aod,
+    busd,
+    fund,
+    START_DATE, 
+    END_DATE, 
+    VESTED_DATE, 
+    LOCK_PERIOD, 
+    TOKEN_PRICE, 
+    MINIMUM_BUSD_AMOUNT,
+    MAXIMUM_BUSD_AMOUNT,
+    TOTAL_POSSIBLE_LOCKED_TOKENS, 
+    TOTAL_POSSIBLE_VESTED_TOKENS
+  ) {}
+}

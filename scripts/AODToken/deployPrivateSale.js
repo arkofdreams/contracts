@@ -16,7 +16,7 @@ function getRole(name) {
 }
 
 async function deploy(aod, busd, fund) {
-  const TokenSale = await hardhat.ethers.getContractFactory('AODPrivateSale')
+  const TokenSale = await hardhat.ethers.getContractFactory('AODPrivateSaleC2')
   const sale = await TokenSale.deploy(aod, busd, fund)
   await sale.deployed()
 

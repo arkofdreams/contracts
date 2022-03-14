@@ -18,16 +18,16 @@ async function getSigners() {
   const signers = await ethers.getSigners()
   //deploy contracts
   const token = await deploy('AODToken')
-  const arkonian = await deploy('AODArkonians', token.address)
+  const arkonian = await deploy('AODTeam', token.address)
 
   //attach contracts
   for (let i = 0; i < signers.length; i++) {
     const tokenFactory = await ethers.getContractFactory('AODToken', signers[i])
-    const arkonianFactory = await ethers.getContractFactory('AODArkonians', signers[i])
+    const arkonianFactory = await ethers.getContractFactory('AODTeam', signers[i])
     signers[i].token = await tokenFactory.attach(token.address)
     signers[i].arkonian = await arkonianFactory.attach(arkonian.address)
   }
-  //In AODToken, grant admin role to AODArkonians
+  //In AODToken, grant admin role to AODTeam
   await signers[0].token.grantRole(getRole('MINTER_ROLE'), arkonian.address)
   await signers[0].token.grantRole(getRole('MINTER_ROLE'), arkonian.address)
   return signers
@@ -45,7 +45,7 @@ function getRole(name) {
 
 }
 
-describe('AODArkonian Tests', function () {
+describe('AODTeam Tests', function () {
   before(async function() {
     const signers = await getSigners()
     const [ owner, investor1, investor2 ] = signers

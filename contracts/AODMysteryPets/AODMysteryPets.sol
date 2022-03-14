@@ -18,14 +18,14 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import "./ERC721Base.sol";
 
-contract AODMysteryPets is ERC721Base, ReentrancyGuard {
+contract AODOriginPets is ERC721Base, ReentrancyGuard {
   using Strings for uint256;
   using SafeMath for uint256;
 
   // ============ Constants ============
   
   //start date of the private sale
-  //Feb 14, 2022 12AM GTM
+  //Feb 4, 2022 12AM GTM
   uint64 public constant PRIVATE_SALE_DATE = 1644796800;
   //the private sale price per token
   uint256 public constant PRIVATE_SALE_PRICE = 0.04 ether;

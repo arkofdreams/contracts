@@ -42,7 +42,7 @@ module.exports = {
         process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_LOCALHOST_PRE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_ARKONIANS_ADDRESS
+        process.env.BLOCKCHAIN_LOCALHOST_TEAM_ADDRESS
       ]
     },
     testnet: {
@@ -57,7 +57,7 @@ module.exports = {
         process.env.BLOCKCHAIN_TESTNET_PRIVATE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_TESTNET_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_ARKONIANS_ADDRESS
+        process.env.BLOCKCHAIN_TESTNET_TEAM_ADDRESS
       ]
     },
     mainnet: {
@@ -72,7 +72,7 @@ module.exports = {
         process.env.BLOCKCHAIN_MAINNET_PRIVATE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS,
         process.env.BLOCKCHAIN_MAINNET_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_ARKONIANS_ADDRESS
+        process.env.BLOCKCHAIN_MAINNET_TEAM_ADDRESS
       ]
     },
   },
