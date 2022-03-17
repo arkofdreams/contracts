@@ -25,10 +25,12 @@ module.exports = {
     hardhat: {
       chainId: 1337,
       mining: {
-        //set this to false if you want localhost to mimick a real blockchain
+        // Set this to false if you want localhost to mimick a real blockchain
         auto: true,
         interval: 5000
-      }
+      },
+      // We have to set this before all event dates e.g. private sale, presale
+      initialDate: new Date('January 1, 2021 00:00:00').toString()
     },
     localhost: {
       url: 'http://127.0.0.1:8545',

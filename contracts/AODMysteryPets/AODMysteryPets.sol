@@ -18,42 +18,49 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import "./ERC721Base.sol";
 
-contract AODOriginPets is ERC721Base, ReentrancyGuard {
+contract AODMysteryPets is ERC721Base, ReentrancyGuard {
   using Strings for uint256;
   using SafeMath for uint256;
 
   // ============ Constants ============
   
-  //start date of the private sale
-  //Feb 4, 2022 12AM GTM
+  // Start date of the private sale
+  // Feb 4, 2022 12AM GTM
   uint64 public constant PRIVATE_SALE_DATE = 1644796800;
-  //the private sale price per token
+
+  // The private sale price per token
   uint256 public constant PRIVATE_SALE_PRICE = 0.04 ether;
-  //maximum amount that can be purchased per wallet
+
+  // Maximum amount that can be purchased per wallet
   uint8 public constant PRIVATE_SALE_MAX_PURCHASE = 5;
   
-  //start date of the presale sale
-  //March 1, 2022 12AM GTM
+  // Start date of the presale sale
+  // March 1, 2022 12AM GTM
   uint64 public constant PRESALE_DATE = 1646092800;
-  //the private sale price per token
+
+  // The private sale price per token
   uint256 public constant PRESALE_PRICE = 0.08 ether;
-  //maximum amount that can be purchased per wallet
+
+  // Maximum amount that can be purchased per wallet
   uint8 public constant PRESALE_MAX_PURCHASE = 5;
   
-  //start date of the token sale
-  //March 15, 2022 12AM GTM
+  // Start date of the token sale
+  // March 15, 2022 12AM GTM
   uint64 public constant SALE_DATE = 1647302400;
-  //the sale price per token
+
+  // The sale price per token
   uint256 public constant SALE_PRICE = 0.08 ether;
-  //maximum amount that can be purchased per wallet
+
+  // Maximum amount that can be purchased per wallet
   uint8 public constant SALE_MAX_PURCHASE = 0;
 
-  //the amount of tokens to reserve
+  // The amount of tokens to reserve
   uint16 public constant RESERVED = 30;
 
-  //the provenance hash (the CID)
+  // The provenance hash (the CID)
   string public PROVENANCE;
-  //the offset to be used to determine what token id should get which CID
+
+  // The offset to be used to determine what token id should get which CID
   uint16 public INDEX_OFFSET;
 
   // ============ Deploy ============
@@ -62,17 +69,14 @@ contract AODOriginPets is ERC721Base, ReentrancyGuard {
    * @dev Sets up ERC721Base. Permanently sets the IPFS CID
    */
   constructor(string memory uri) ERC721Base(
-    //name
-    "AOD Mystery Pets",
-    //symbol 
+    "AOD Mystery Pets", 
     "AODMP",
-    //max supply
     2222
   ) {
-    //set the initial base uri
+    // Set the initial base uri
     _setBaseTokenURI(uri);
 
-    //reserve pets
+    // Reserve pets
     address recipient = _msgSender();
     for(uint i = 0; i < RESERVED; i++) {
       _safeMint(recipient);
@@ -110,7 +114,7 @@ contract AODOriginPets is ERC721Base, ReentrancyGuard {
     require(_exists(tokenId), "URI query for nonexistent token");
 
     //if no offset
-    if (INDEX_OFFSET == 0 || bytes(PROVENANCE).length > 0) {
+    if (INDEX_OFFSET == 0 || bytes(PROVENANCE).length == 0) {
       //use the placeholder
       return placeholderURI();
     }
@@ -140,6 +144,13 @@ contract AODOriginPets is ERC721Base, ReentrancyGuard {
 
     //use the placeholder
     return "https://www.arkofdreams.io/assets/data/egg.json";
+  }
+
+  /**
+   * @dev Returns index offset
+   */
+  function indexOffset() public view returns(uint16) {
+    return INDEX_OFFSET;
   }
 
   // ============ Minting Methods ============
@@ -181,7 +192,8 @@ contract AODOriginPets is ERC721Base, ReentrancyGuard {
    * @dev Returns the current sale stage
    */
   function saleStage() public view returns(uint64, uint256, uint8) {
-    uint16 timenow = uint16(block.timestamp);
+    uint32 timenow = uint32(block.timestamp);
+
     if (timenow >= SALE_DATE) {
       return (SALE_DATE, SALE_PRICE, SALE_MAX_PURCHASE);
     } else if (timenow >= PRESALE_DATE) {
