@@ -146,13 +146,6 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
     return "https://www.arkofdreams.io/assets/data/egg.json";
   }
 
-  /**
-   * @dev Returns index offset
-   */
-  function indexOffset() public view returns(uint16) {
-    return INDEX_OFFSET;
-  }
-
   // ============ Minting Methods ============
 
   /**

@@ -109,7 +109,7 @@ describe('AODMysteryPets Tests', function () {
   it('Should withdraw', async function () {
     const { contractOwner, dao, bbbb } = this.signers;
 
-    expect(await contractOwner.withContract.indexOffset()).to.equal(0);
+    expect(await contractOwner.withContract.INDEX_OFFSET()).to.equal(0);
 
     // const startingDAOBalance = parseFloat(
     //   ethers.utils.formatEther(await dao.getBalance())
@@ -135,14 +135,14 @@ describe('AODMysteryPets Tests', function () {
     //   ) - startingBBBBBalance
     // ).to.be.above(0.12);
 
-    expect(await contractOwner.withContract.indexOffset()).to.be.above(0);
+    expect(await contractOwner.withContract.INDEX_OFFSET()).to.be.above(0);
   });
 
   it('Should get the correct token URIs', async function () {
     const { contractOwner } = this.signers;
 
     const max = parseInt(await contractOwner.withContract.MAX_SUPPLY());
-    const offset = parseInt(await contractOwner.withContract.indexOffset());
+    const offset = parseInt(await contractOwner.withContract.INDEX_OFFSET());
 
     for (i = 6; i <= 10; i++) {
       const index = ((i + offset) % max) + 1;
