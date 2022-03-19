@@ -1,11 +1,11 @@
-require("@nomiclabs/hardhat-etherscan");
-require("@nomiclabs/hardhat-waffle");
-require("hardhat-gas-reporter");
+require('@nomiclabs/hardhat-etherscan');
+require('@nomiclabs/hardhat-waffle');
+require('hardhat-gas-reporter');
 require('dotenv').config();
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
-task("accounts", "Prints the list of accounts", async () => {
+task('accounts', 'Prints the list of accounts', async () => {
   const accounts = await ethers.getSigners();
 
   for (const account of accounts) {
@@ -31,53 +31,53 @@ module.exports = {
       }
     },
     localhost: {
-      url: "http://127.0.0.1:8545",
+      url: 'http://127.0.0.1:8545',
       accounts: [process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_KEY],
       wallets: {
         fund: process.env.BLOCKCHAIN_LOCALHOST_FUND_ADDRESS
       },
-      contracts: [
-        process.env.BLOCKCHAIN_LOCALHOST_MYSTERY_CHEST_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_PRE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_LOCALHOST_TEAM_ADDRESS
-      ]
+      contracts: {
+        mysteryChest: process.env.BLOCKCHAIN_LOCALHOST_MYSTERY_CHEST_ADDRESS,
+        token: process.env.BLOCKCHAIN_LOCALHOST_TOKEN_ADDRESS,
+        privateSale: process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_SALE_ADDRESS,
+        preSale: process.env.BLOCKCHAIN_LOCALHOST_PRE_SALE_ADDRESS,
+        multisig: process.env.BLOCKCHAIN_LOCALHOST_MULTISIG_ADDRESS,
+        team: process.env.BLOCKCHAIN_LOCALHOST_TEAM_ADDRESS
+      }
     },
     testnet: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       accounts: [process.env.BLOCKCHAIN_TESTNET_PRIVATE_KEY],
       wallets: {
         fund: process.env.BLOCKCHAIN_TESTNET_FUND_ADDRESS
       },
-      contracts: [
-        process.env.BLOCKCHAIN_TESTNET_MYSTERY_CHEST_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_PRIVATE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_TESTNET_TEAM_ADDRESS
-      ]
+      contracts: {
+        mysteryChest: process.env.BLOCKCHAIN_TESTNET_MYSTERY_CHEST_ADDRESS,
+        token: process.env.BLOCKCHAIN_TESTNET_TOKEN_ADDRESS,
+        privateSale: process.env.BLOCKCHAIN_TESTNET_PRIVATE_SALE_ADDRESS,
+        preSale: process.env.BLOCKCHAIN_TESTNET_PRE_SALE_ADDRESS,
+        multisig: process.env.BLOCKCHAIN_TESTNET_MULTISIG_ADDRESS,
+        team: process.env.BLOCKCHAIN_TESTNET_TEAM_ADDRESS
+      }
     },
     mainnet: {
-      url: "https://bsc-dataseed.binance.org/",
+      url: 'https://bsc-dataseed.binance.org/',
       accounts: [process.env.BLOCKCHAIN_MAINNET_PRIVATE_KEY],
       wallets: {
         fund: process.env.BLOCKCHAIN_MAINNET_FUND_ADDRESS
       },
-      contracts: [
-        process.env.BLOCKCHAIN_MAINNET_MYSTERY_CHEST_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_TOKEN_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_PRIVATE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_MULTISIG_ADDRESS,
-        process.env.BLOCKCHAIN_MAINNET_TEAM_ADDRESS
-      ]
-    },
+      contracts: {
+        mysteryChest: process.env.BLOCKCHAIN_MAINNET_MYSTERY_CHEST_ADDRESS,
+        token: process.env.BLOCKCHAIN_MAINNET_TOKEN_ADDRESS,
+        privateSale: process.env.BLOCKCHAIN_MAINNET_PRIVATE_SALE_ADDRESS,
+        preSale: process.env.BLOCKCHAIN_MAINNET_PRE_SALE_ADDRESS,
+        multisig: process.env.BLOCKCHAIN_MAINNET_MULTISIG_ADDRESS,
+        team: process.env.BLOCKCHAIN_MAINNET_TEAM_ADDRESS
+      }
+    }
   },
   solidity: {
-    version: "0.8.9",
+    version: '0.8.9',
     settings: {
       optimizer: {
         enabled: true,
@@ -86,10 +86,10 @@ module.exports = {
     }
   },
   paths: {
-    sources: "./contracts",
-    tests: "./test",
-    cache: "./cache",
-    artifacts: "./artifacts"
+    sources: './contracts',
+    tests: './test',
+    cache: './cache',
+    artifacts: './artifacts'
   },
   mocha: {
     timeout: 20000
@@ -98,7 +98,7 @@ module.exports = {
     currency: 'USD',
     token: 'BNB', //comment this out if you want ETH
     coinmarketcap: process.env.BLOCKCHAIN_CMC_KEY,
-    gasPrice: 200,
+    gasPrice: 200
   },
   etherscan: {
     // Your API key for Etherscan
