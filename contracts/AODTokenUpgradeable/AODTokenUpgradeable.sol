@@ -25,7 +25,7 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
  * banner and pauser roles, as well as the default admin role, which
  * will let it grant both minter and pauser roles to other accounts.
  */
-abstract contract AODToken is
+contract AODTokenUpgradeable is
     Initializable,
     ContextUpgradeable,
     PausableUpgradeable,
@@ -142,4 +142,6 @@ abstract contract AODToken is
     function _mint(address account, uint256 amount) internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) {
         super._mint(account, amount);
     }
+
+	function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }
