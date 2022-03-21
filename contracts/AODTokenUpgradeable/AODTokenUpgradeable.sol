@@ -143,5 +143,5 @@ contract AODTokenUpgradeable is
         super._mint(account, amount);
     }
 
-	function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

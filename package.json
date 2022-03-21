@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "test": "hardhat test",
+    "solhint": "solhint -f table contracts/**/*.sol",
     "prettier:sol": "prettier --write contracts/**/*.sol"
   },
   "dependencies": {

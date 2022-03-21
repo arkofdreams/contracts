@@ -38,22 +38,6 @@ async function getSigners() {
   return signers;
 }
 
-function getRole(name) {
-  if (!name || name === 'DEFAULT_ADMIN_ROLE') {
-    return '0x0000000000000000000000000000000000000000000000000000000000000000';
-  }
-
-  return (
-    '0x' +
-    Buffer.from(
-      ethers.utils.solidityKeccak256(['string'], [name]).slice(2),
-      'hex'
-    ).toString('hex')
-  );
-}
-
-const cap = ethers.utils.parseEther('1000000000');
-
 describe('AODTokenUpgradeable Tests', function () {
   before(async function () {
     const signers = await getSigners();
@@ -67,5 +51,10 @@ describe('AODTokenUpgradeable Tests', function () {
     };
   });
 
-  it('Should deploy contract with correct name and symbol', async function () {});
+  it('Should deploy contract with correct name and symbol', async function () {
+    const { owner } = this.signers;
+
+    expect(await owner.aodToken.name()).to.equal('Arkonia');
+    expect(await owner.aodToken.symbol()).to.equal('AOD');
+  });
 });
