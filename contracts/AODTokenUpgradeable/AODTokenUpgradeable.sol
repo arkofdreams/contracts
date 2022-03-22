@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "hardhat/console.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -130,8 +131,12 @@ contract AODTokenUpgradeable is
    * @dev Internally blacklists or whitelists a `badactor`
    */
   function _blacklist(address badactor, bool yesno) internal virtual {
-    require(yesno && _blacklisted[badactor] != yesno, "Already blacklisted");
-    require(!yesno && _blacklisted[badactor] != yesno, "Already whitelisted");
+    if (yesno) {
+      require(!_blacklisted[badactor], "Already blacklisted");
+    } else {
+      require(_blacklisted[badactor], "Already whitelisted");
+    }
+
     _blacklisted[badactor] = yesno;
     emit Blacklist(badactor, yesno);
   }
