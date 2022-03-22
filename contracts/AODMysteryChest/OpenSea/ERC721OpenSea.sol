@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 //interface of a OpenSea compliant contract
-import './interfaces/IERC721OpenSea.sol';
+import "./interfaces/IERC721OpenSea.sol";
 
 /**
  * @dev Abstract of an OpenSea compliant contract

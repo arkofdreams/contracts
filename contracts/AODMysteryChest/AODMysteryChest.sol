@@ -3,21 +3,21 @@
 pragma solidity ^0.8.0;
 
 //implementation of ERC721
-import '@openzeppelin/contracts/token/ERC721/ERC721.sol';
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol';
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
-import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
-import '@openzeppelin/contracts/utils/Context.sol';
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
-import './BEP721/BEP721.sol';
-import './OpenSea/ERC721OpenSea.sol';
+import "./BEP721/BEP721.sol";
+import "./OpenSea/ERC721OpenSea.sol";
 
 contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ERC721Pausable, BEP721, ERC721OpenSea {
-  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
+  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   string private _tokenURI;
 
@@ -30,7 +30,7 @@ contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ER
    * @dev Modifier for minter
    */
   modifier isMinter() {
-    require(hasRole(MINTER_ROLE, _msgSender()), 'Must be a minter');
+    require(hasRole(MINTER_ROLE, _msgSender()), "Must be a minter");
     _;
   }
 
@@ -38,7 +38,7 @@ contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ER
    * @dev Modifier for minter
    */
   modifier isPauser() {
-    require(hasRole(PAUSER_ROLE, _msgSender()), 'Must be a pauser');
+    require(hasRole(PAUSER_ROLE, _msgSender()), "Must be a pauser");
     _;
   }
 
@@ -72,7 +72,7 @@ contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ER
         MINTER_ROLE,
         ECDSA.recover(ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(tokenId, recipient))), proof)
       ),
-      'Invalid proof.'
+      "Invalid proof."
     );
     //mint first and wait for errors
     _safeMint(recipient, tokenId);
@@ -129,7 +129,7 @@ contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ER
    * @dev See {IERC721Metadata-tokenURI}.
    */
   function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-    require(_exists(tokenId), 'Token does not exist');
+    require(_exists(tokenId), "Token does not exist");
     return _tokenURI;
   }
 

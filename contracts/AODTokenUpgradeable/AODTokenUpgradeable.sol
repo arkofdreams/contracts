@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -35,9 +35,9 @@ contract AODTokenUpgradeable is
   UUPSUpgradeable
 {
   // All custom roles
-  bytes32 public constant BANNER_ROLE = keccak256('BANNER_ROLE');
-  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
+  bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
+  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   // Mapping of address to blacklisted
   mapping(address => bool) private _blacklisted;
@@ -51,7 +51,7 @@ contract AODTokenUpgradeable is
    * to the account that deploys the contract.
    */
   function initialize() public initializer {
-    __ERC20_init('Arkonia', 'AOD');
+    __ERC20_init("Arkonia", "AOD");
     __ERC20Capped_init(1000000000 ether);
     __ERC20Burnable_init();
     __Context_init();
@@ -115,12 +115,12 @@ contract AODTokenUpgradeable is
     address to,
     uint256 amount
   ) internal virtual override {
-    require(!_blacklisted[_msgSender()], 'Caller is blacklisted');
-    require(!_blacklisted[from], 'Sender is blacklisted');
-    require(!_blacklisted[to], 'Recipient is blacklisted');
+    require(!_blacklisted[_msgSender()], "Caller is blacklisted");
+    require(!_blacklisted[from], "Sender is blacklisted");
+    require(!_blacklisted[to], "Recipient is blacklisted");
 
     if (!hasRole(MINTER_ROLE, _msgSender()) && !hasRole(MINTER_ROLE, from)) {
-      require(!paused(), 'Token transfer while paused');
+      require(!paused(), "Token transfer while paused");
     }
 
     super._beforeTokenTransfer(from, to, amount);
@@ -130,8 +130,8 @@ contract AODTokenUpgradeable is
    * @dev Internally blacklists or whitelists a `badactor`
    */
   function _blacklist(address badactor, bool yesno) internal virtual {
-    require(yesno && _blacklisted[badactor] != yesno, 'Already blacklisted');
-    require(!yesno && _blacklisted[badactor] != yesno, 'Already whitelisted');
+    require(yesno && _blacklisted[badactor] != yesno, "Already blacklisted");
+    require(!yesno && _blacklisted[badactor] != yesno, "Already whitelisted");
     _blacklisted[badactor] = yesno;
     emit Blacklist(badactor, yesno);
   }

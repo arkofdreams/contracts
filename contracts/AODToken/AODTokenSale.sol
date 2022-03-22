@@ -2,21 +2,21 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
-import '@openzeppelin/contracts/security/Pausable.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
 contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyGuard {
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   //so we can invoke mint function in vest and invest
   using Address for address;
@@ -87,15 +87,15 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
     uint256 _lockedTokens,
     uint256 _vestedTokens
   ) {
-    require(_startDate > 0, 'Start date is out of bounds');
-    require(_endDate > _startDate, 'End date should be greater than start date');
-    require(_vestedDate > _endDate, 'Vested date should be greater than end date');
-    require(_lockPeriod > 0, 'Lock period should be greater than zero');
-    require(_tokenPrice > 0, 'Token price should be greater than zero');
-    require(_minimumBUSDAmount > 0, 'Minimum BUSD amount should be greater than zero');
-    require(_maximumBUSDAmount > _minimumBUSDAmount, 'Maximum BUSD amount should be greater than the minimum BUSD amount');
-    require(_lockedTokens > 0, 'Locked tokens should be greater than zero');
-    require(_vestedTokens > 0, 'Vested tokens should be greater than zero');
+    require(_startDate > 0, "Start date is out of bounds");
+    require(_endDate > _startDate, "End date should be greater than start date");
+    require(_vestedDate > _endDate, "Vested date should be greater than end date");
+    require(_lockPeriod > 0, "Lock period should be greater than zero");
+    require(_tokenPrice > 0, "Token price should be greater than zero");
+    require(_minimumBUSDAmount > 0, "Minimum BUSD amount should be greater than zero");
+    require(_maximumBUSDAmount > _minimumBUSDAmount, "Maximum BUSD amount should be greater than the minimum BUSD amount");
+    require(_lockedTokens > 0, "Locked tokens should be greater than zero");
+    require(_vestedTokens > 0, "Vested tokens should be greater than zero");
 
     //set up roles for the contract creator
     address sender = _msgSender();
@@ -130,16 +130,16 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
    */
   function buy(uint256 aodAmount) external virtual nonReentrant {
     //check if aodAmount
-    require(aodAmount > 0, 'AOD amount missing');
+    require(aodAmount > 0, "AOD amount missing");
     //check for valid stage
-    require(canVest(), 'Not for sale');
+    require(canVest(), "Not for sale");
     //calculate busd amount
     uint256 busdAmount = (aodAmount * tokenPrice) / 1 ether;
-    require(busdAmount >= minimumBUSDAmount, 'Amount is too small');
-    require(busdAmount <= maximumBUSDAmount, 'Amount is too large');
+    require(busdAmount >= minimumBUSDAmount, "Amount is too small");
+    require(busdAmount <= maximumBUSDAmount, "Amount is too large");
     address beneficiary = _msgSender();
     //check allowance
-    require(BUSD.allowance(beneficiary, address(this)) >= busdAmount, 'Contract not approved to transfer BUSD');
+    require(BUSD.allowance(beneficiary, address(this)) >= busdAmount, "Contract not approved to transfer BUSD");
     //now accept the payment
     SafeERC20.safeTransferFrom(BUSD, beneficiary, _fund, busdAmount);
     //last start vesting
@@ -167,17 +167,17 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
    * Emits a {TokensReleased} event.
    */
   function release() public virtual nonReentrant {
-    require(!paused(), 'Releasing while paused');
+    require(!paused(), "Releasing while paused");
     //wait for tge
-    require(tokenGeneratedEvent > 0, 'Token generation event not triggered yet');
+    require(tokenGeneratedEvent > 0, "Token generation event not triggered yet");
     address beneficiary = _msgSender();
     //releasable calc by total releaseable amount - amount already released
     uint256 releasable = totalReleasableAmount(beneficiary, uint64(block.timestamp));
-    require(releasable > 0, 'No tokens releasable');
+    require(releasable > 0, "No tokens releasable");
     //already account for the new tokens
     accounts[beneficiary].releasedTokens += releasable;
     //next mint tokens
-    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), 'Low-level mint failed');
+    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), "Low-level mint failed");
     //unlocked tokens are now unlocked
     accounts[beneficiary].unlocked = true;
     //finally emit released
@@ -188,9 +188,9 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
    * @dev Triggers the TGE
    */
   function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
-    require(tokenGeneratedEvent == 0, 'Token generation event already triggered');
+    require(tokenGeneratedEvent == 0, "Token generation event already triggered");
 
-    require(startDate <= timestamp && timestamp <= vestedDate, 'Timestamp out of bounds');
+    require(startDate <= timestamp && timestamp <= vestedDate, "Timestamp out of bounds");
     tokenGeneratedEvent = timestamp;
   }
 
@@ -257,7 +257,7 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
    */
   function vest(address beneficiary, uint256 aodAmount) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     //check for valid stage
-    require(canVest(), 'Not for sale');
+    require(canVest(), "Not for sale");
     _vest(beneficiary, aodAmount, 0);
   }
 
@@ -291,12 +291,12 @@ contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyG
     uint256 busdAmount
   ) internal virtual {
     //check if vested
-    require(!accounts[beneficiary].active, 'Beneficiary already vested');
+    require(!accounts[beneficiary].active, "Beneficiary already vested");
     //check if aodAmount
-    require(aodAmount > 0, 'AOD amount missing');
+    require(aodAmount > 0, "AOD amount missing");
     //calc max tokens that can be allocated
     uint256 maxAllocation = totalPossibleLockedTokens + totalPossibleVestedTokens;
-    require((currentlyAllocated + aodAmount) <= maxAllocation, 'Amount exceeds the available allocation');
+    require((currentlyAllocated + aodAmount) <= maxAllocation, "Amount exceeds the available allocation");
     //split the AOD amount by 10%
     uint256 lockedTokens = (aodAmount * 1 ether) / 10 ether;
     uint256 vestingTokens = (aodAmount * 9 ether) / 10 ether;

@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol';
-import '@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol';
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/security/Pausable.sol';
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -26,9 +26,9 @@ import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
  */
 contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, ERC20Capped {
   //all custom roles
-  bytes32 public constant BANNER_ROLE = keccak256('BANNER_ROLE');
-  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
+  bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
+  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
   //mapping of address to blacklisted
   mapping(address => bool) private _blacklisted;
   //blacklist evennt
@@ -39,7 +39,7 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
    * Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE`
    * to the account that deploys the contract.
    */
-  constructor() ERC20('Arkonia', 'AOD') ERC20Capped(1000000000 ether) {
+  constructor() ERC20("Arkonia", "AOD") ERC20Capped(1000000000 ether) {
     address sender = _msgSender();
     //set up roles for contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, sender);
@@ -94,12 +94,12 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
     address to,
     uint256 amount
   ) internal virtual override {
-    require(!_blacklisted[_msgSender()], 'Caller is blacklisted');
-    require(!_blacklisted[from], 'Sender is blacklisted');
-    require(!_blacklisted[to], 'Recipient is blacklisted');
+    require(!_blacklisted[_msgSender()], "Caller is blacklisted");
+    require(!_blacklisted[from], "Sender is blacklisted");
+    require(!_blacklisted[to], "Recipient is blacklisted");
 
     if (!hasRole(MINTER_ROLE, _msgSender()) && !hasRole(MINTER_ROLE, from)) {
-      require(!paused(), 'Token transfer while paused');
+      require(!paused(), "Token transfer while paused");
     }
 
     super._beforeTokenTransfer(from, to, amount);
@@ -109,8 +109,8 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
    * @dev Internally blacklists or whitelists a `badactor`
    */
   function _blacklist(address badactor, bool yesno) internal virtual {
-    require(yesno && _blacklisted[badactor] != yesno, 'Already blacklisted');
-    require(!yesno && _blacklisted[badactor] != yesno, 'Already whitelisted');
+    require(yesno && _blacklisted[badactor] != yesno, "Already blacklisted");
+    require(!yesno && _blacklisted[badactor] != yesno, "Already whitelisted");
     _blacklisted[badactor] = yesno;
     emit Blacklist(badactor, yesno);
   }

@@ -2,19 +2,19 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/security/Pausable.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
 contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, ReentrancyGuard {
   //custom roles
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-  bytes32 public constant APPROVER_ROLE = keccak256('APPROVER_ROLE');
-  bytes32 public constant REQUESTER_ROLE = keccak256('REQUESTER_ROLE');
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
+  bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
 
   //erc20 interface
   IERC20 public BUSD;
@@ -47,13 +47,13 @@ contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, Reentr
    * @dev Approves a transaction
    */
   function approve(uint256 id) public virtual onlyRole(APPROVER_ROLE) {
-    require(!paused(), 'Approving is paused');
+    require(!paused(), "Approving is paused");
     //check if tx exists
-    require(txs[id].amount > 0, 'Transaction does not exist');
+    require(txs[id].amount > 0, "Transaction does not exist");
     //check if tx exists
-    require(!txs[id].executed, 'Transaction already executed');
+    require(!txs[id].executed, "Transaction already executed");
     //require approver didnt already approve
-    require(!txs[id].approved[_msgSender()], 'Already approved');
+    require(!txs[id].approved[_msgSender()], "Already approved");
     //add to the approval
     txs[id].approvals += 1;
     txs[id].approved[_msgSender()] = true;
@@ -80,9 +80,9 @@ contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, Reentr
     address beneficiary,
     uint256 amount
   ) public virtual onlyRole(REQUESTER_ROLE) {
-    require(!paused(), 'Requesting is paused');
+    require(!paused(), "Requesting is paused");
     //check to see if tx exists
-    require(txs[id].amount == 0, 'Transaction exists');
+    require(txs[id].amount == 0, "Transaction exists");
     //create a new tx
     txs[id].amount = amount;
     txs[id].beneficiary = beneficiary;

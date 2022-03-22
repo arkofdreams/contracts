@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 //interface of a BEP721 compliant contract
-import './interfaces/IBEP721.sol';
+import "./interfaces/IBEP721.sol";
 
 /**
  * @dev Abstract of a BEP721 that pre defines total supply

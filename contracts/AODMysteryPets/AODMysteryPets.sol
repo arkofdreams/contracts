@@ -11,12 +11,12 @@ pragma solidity ^0.8.0;
 //
 // LEARN MORE: http://www.arkofdreams.io/
 //
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import '@openzeppelin/contracts/utils/Strings.sol';
-import '@openzeppelin/contracts/utils/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/cryptography/ECDSA.sol';
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import './ERC721Base.sol';
+import "./ERC721Base.sol";
 
 contract AODMysteryPets is ERC721Base, ReentrancyGuard {
   using Strings for uint256;
@@ -68,7 +68,7 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
   /**
    * @dev Sets up ERC721Base. Permanently sets the IPFS CID
    */
-  constructor(string memory uri) ERC721Base('AOD Mystery Pets', 'AODMP', 2222) {
+  constructor(string memory uri) ERC721Base("AOD Mystery Pets", "AODMP", 2222) {
     // Set the initial base uri
     _setBaseTokenURI(uri);
 
@@ -95,7 +95,7 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
    */
   function contractURI() public view returns (string memory) {
     //ex. https://ipfs.io/ipfs/ + Qm123abc + /contract.json
-    return string(abi.encodePacked(baseTokenURI(), PROVENANCE, '/contract.json'));
+    return string(abi.encodePacked(baseTokenURI(), PROVENANCE, "/contract.json"));
   }
 
   /**
@@ -103,7 +103,7 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
    * token URI
    */
   function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-    require(_exists(tokenId), 'URI query for nonexistent token');
+    require(_exists(tokenId), "URI query for nonexistent token");
 
     //if no offset
     if (INDEX_OFFSET == 0 || bytes(PROVENANCE).length == 0) {
@@ -118,7 +118,7 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
     // - token 8 = ((8 + 2) % 8) + 1 = 3
     uint256 index = tokenId.add(INDEX_OFFSET).mod(MAX_SUPPLY).add(1);
     //ex. https://ipfs.io/ + Qm123abc + / + 1000 + .json
-    return string(abi.encodePacked(baseTokenURI(), PROVENANCE, '/', index.toString(), '.json'));
+    return string(abi.encodePacked(baseTokenURI(), PROVENANCE, "/", index.toString(), ".json"));
   }
 
   /**
@@ -127,11 +127,11 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
   function placeholderURI() public view virtual returns (string memory) {
     if (bytes(PROVENANCE).length > 0) {
       //use the placeholder
-      return string(abi.encodePacked(baseTokenURI(), PROVENANCE, '/placeholder.json'));
+      return string(abi.encodePacked(baseTokenURI(), PROVENANCE, "/placeholder.json"));
     }
 
     //use the placeholder
-    return 'https://www.arkofdreams.io/assets/data/egg.json';
+    return "https://www.arkofdreams.io/assets/data/egg.json";
   }
 
   // ============ Minting Methods ============
@@ -149,9 +149,9 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
     require(
       hasRole(
         MINTER_ROLE,
-        ECDSA.recover(ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked('authorized', recipient))), proof)
+        ECDSA.recover(ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked("authorized", recipient))), proof)
       ),
-      'Invalid proof.'
+      "Invalid proof."
     );
     //now purchase token
     _buy(quantity, recipient);
@@ -214,20 +214,20 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
    */
   function _buy(uint256 quantity, address recipient) internal virtual {
     //make sure recipient is a valid address
-    require(recipient != address(0), 'Invalid recipient');
+    require(recipient != address(0), "Invalid recipient");
     //the quantity being minted should not exceed the max supply
-    require(totalSupply().add(quantity) <= MAX_SUPPLY, 'Amount exceeds total allowable collection');
+    require(totalSupply().add(quantity) <= MAX_SUPPLY, "Amount exceeds total allowable collection");
     //get the current sale stage
     (uint64 saleDate, uint256 unitPrice, uint8 maxPurchase) = saleStage();
     //has the sale started?
-    require(saleDate > 0, 'Sale has not started');
+    require(saleDate > 0, "Sale has not started");
     //is the quantity valid?
-    require(quantity > 0, 'Invalid Quantity');
+    require(quantity > 0, "Invalid Quantity");
     //the quantity here plus the current balance
     //should be less than the max purchase amount
-    require(maxPurchase == 0 || quantity.add(balanceOf(recipient)) <= maxPurchase, 'Cannot mint more than allowed');
+    require(maxPurchase == 0 || quantity.add(balanceOf(recipient)) <= maxPurchase, "Cannot mint more than allowed");
     //the value sent should be the price times quantity
-    require(quantity.mul(unitPrice) <= msg.value, 'Amount sent is not correct');
+    require(quantity.mul(unitPrice) <= msg.value, "Amount sent is not correct");
     //loop through quantity and mint
     for (uint256 i = 0; i < quantity; i++) {
       _safeMint(recipient);
@@ -249,7 +249,7 @@ contract AODMysteryPets is ERC721Base, ReentrancyGuard {
    * @dev This allows to defer the provenance at a later time
    */
   function setProvenance(string memory provenance) external virtual onlyRole(CURATOR_ROLE) {
-    require(bytes(PROVENANCE).length == 0, 'Provenance is already set');
+    require(bytes(PROVENANCE).length == 0, "Provenance is already set");
     //make cid immutable
     PROVENANCE = provenance;
   }

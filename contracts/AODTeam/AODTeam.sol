@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import '@openzeppelin/contracts/utils/Context.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
-import '@openzeppelin/contracts/security/Pausable.sol';
-import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
@@ -21,7 +21,7 @@ contract AODTeam is Context, Pausable, AccessControlEnumerable, ReentrancyGuard 
 
   // ============ Constants ============
 
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   //Vested Date - April 21, 2024 (GMT)
   //the timestamp when all accounts are fully vested
@@ -161,17 +161,17 @@ contract AODTeam is Context, Pausable, AccessControlEnumerable, ReentrancyGuard 
    * Emits a {TokensReleased} event.
    */
   function release() public virtual nonReentrant {
-    require(!paused(), 'Releasing while paused');
+    require(!paused(), "Releasing while paused");
     //wait for tge
-    require(tokenGeneratedEvent > 0, 'Token generation event not triggered yet');
+    require(tokenGeneratedEvent > 0, "Token generation event not triggered yet");
     address beneficiary = _msgSender();
     //releasable calc by total releaseable amount - amount already released
     uint256 releasable = totalReleasableAmount(beneficiary, uint64(block.timestamp));
-    require(releasable > 0, 'No tokens releasable');
+    require(releasable > 0, "No tokens releasable");
     //already account for the new tokens
     accounts[beneficiary].releasedTokens += releasable;
     //next mint tokens
-    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), 'Low-level mint failed');
+    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), "Low-level mint failed");
     //unlocked tokens are now unlocked
     accounts[beneficiary].unlocked = true;
     //finally emit released
@@ -182,9 +182,9 @@ contract AODTeam is Context, Pausable, AccessControlEnumerable, ReentrancyGuard 
    * @dev Triggers the TGE
    */
   function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
-    require(tokenGeneratedEvent == 0, 'Token generation event already triggered');
+    require(tokenGeneratedEvent == 0, "Token generation event already triggered");
 
-    require(timestamp <= VESTED_DATE, 'Timestamp out of bounds');
+    require(timestamp <= VESTED_DATE, "Timestamp out of bounds");
     tokenGeneratedEvent = timestamp;
   }
 
@@ -200,14 +200,14 @@ contract AODTeam is Context, Pausable, AccessControlEnumerable, ReentrancyGuard 
    */
   function vest(address beneficiary, uint256 aodAmount) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     //check if vested
-    require(!accounts[beneficiary].active, 'Beneficiary already vested');
+    require(!accounts[beneficiary].active, "Beneficiary already vested");
     //check if aodAmount
-    require(aodAmount > 0, 'AOD amount missing');
+    require(aodAmount > 0, "AOD amount missing");
     //calc new allocation
     uint256 newAllocation = currentlyAllocated + aodAmount;
     //calc max tokens that can be allocated
     uint256 maxAllocation = TOTAL_POSSIBLE_LOCKED_TOKENS + TOTAL_POSSIBLE_VESTED_TOKENS;
-    require(newAllocation <= maxAllocation, 'Amount exceeds the available allocation');
+    require(newAllocation <= maxAllocation, "Amount exceeds the available allocation");
     //split the AOD amount by 10%
     uint256 lockedTokens = (aodAmount * 1 ether) / 10 ether;
     uint256 vestingTokens = (aodAmount * 9 ether) / 10 ether;

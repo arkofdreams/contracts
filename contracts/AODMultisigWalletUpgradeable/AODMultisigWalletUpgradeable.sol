@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract AODMultisigWalletUpgradeable is
   Initializable,
@@ -20,9 +20,9 @@ contract AODMultisigWalletUpgradeable is
   UUPSUpgradeable
 {
   // Custom roles
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-  bytes32 public constant APPROVER_ROLE = keccak256('APPROVER_ROLE');
-  bytes32 public constant REQUESTER_ROLE = keccak256('REQUESTER_ROLE');
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
+  bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
 
   // Erc20 interface
   IERC20Upgradeable public BUSD;
@@ -64,15 +64,15 @@ contract AODMultisigWalletUpgradeable is
    * @dev Approves a transaction
    */
   function approve(uint256 id) public virtual onlyRole(APPROVER_ROLE) {
-    require(!paused(), 'Approving is paused');
+    require(!paused(), "Approving is paused");
     // Check if tx exists
-    require(txs[id].amount > 0, 'Transaction does not exist');
+    require(txs[id].amount > 0, "Transaction does not exist");
 
     // Check if tx exists
-    require(!txs[id].executed, 'Transaction already executed');
+    require(!txs[id].executed, "Transaction already executed");
 
     // Require approver didnt already approve
-    require(!txs[id].approved[_msgSender()], 'Already approved');
+    require(!txs[id].approved[_msgSender()], "Already approved");
 
     // Add to the approval
     txs[id].approvals += 1;
@@ -101,9 +101,9 @@ contract AODMultisigWalletUpgradeable is
     address beneficiary,
     uint256 amount
   ) public virtual onlyRole(REQUESTER_ROLE) {
-    require(!paused(), 'Requesting is paused');
+    require(!paused(), "Requesting is paused");
     //check to see if tx exists
-    require(txs[id].amount == 0, 'Transaction exists');
+    require(txs[id].amount == 0, "Transaction exists");
     //create a new tx
     txs[id].amount = amount;
     txs[id].beneficiary = beneficiary;

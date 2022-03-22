@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/access/AccessControlEnumerable.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-import '@openzeppelin/contracts/utils/Strings.sol';
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol';
-import '@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol';
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 
 error InvalidRecipient();
 
@@ -17,9 +17,9 @@ contract Arkonians is Ownable, AccessControlEnumerable, ERC721Burnable, ERC721Pa
 
   // ============ Constants ============
 
-  bytes32 public constant MINTER_ROLE = keccak256('MINTER_ROLE');
-  bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-  bytes32 public constant CURATOR_ROLE = keccak256('CURATOR_ROLE');
+  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
   // ============ Storage ============
 
@@ -37,7 +37,7 @@ contract Arkonians is Ownable, AccessControlEnumerable, ERC721Burnable, ERC721Pa
   /**
    * @dev Initializes ERC721B; Sets the contract URI
    */
-  constructor(string memory uri) ERC721('Arkonians', 'ARKONIANS') {
+  constructor(string memory uri) ERC721("Arkonians", "ARKONIANS") {
     _contractURI = uri;
 
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -78,8 +78,8 @@ contract Arkonians is Ownable, AccessControlEnumerable, ERC721Burnable, ERC721Pa
    * @dev See {IERC721Metadata-tokenURI}.
    */
   function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-    require(_exists(tokenId), 'ERC721: URI query for nonexistent token');
-    return string(abi.encodePacked(_baseTokenURI, tokenId.toString(), '.json'));
+    require(_exists(tokenId), "ERC721: URI query for nonexistent token");
+    return string(abi.encodePacked(_baseTokenURI, tokenId.toString(), ".json"));
   }
 
   /**

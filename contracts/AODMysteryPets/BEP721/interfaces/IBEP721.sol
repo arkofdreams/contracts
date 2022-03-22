@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 //interface of an ERC721 compliant contract
-import '@openzeppelin/contracts/token/ERC721/IERC721.sol';
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @dev Required interface of an BEP721 compliant contract.

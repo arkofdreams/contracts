@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import './../AODTokenSale.sol';
+import "./../AODTokenSale.sol";
 
 contract AODTestnetSale is AODTokenSale {
   //the BUSD price per AOD token
