@@ -109,8 +109,12 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
    * @dev Internally blacklists or whitelists a `badactor`
    */
   function _blacklist(address badactor, bool yesno) internal virtual {
-    require(yesno && _blacklisted[badactor] != yesno, "Already blacklisted");
-    require(!yesno && _blacklisted[badactor] != yesno, "Already whitelisted");
+    if (yesno) {
+      require(!_blacklisted[badactor], "Already blacklisted");
+    } else {
+      require(_blacklisted[badactor], "Already whitelisted");
+    }
+
     _blacklisted[badactor] = yesno;
     emit Blacklist(badactor, yesno);
   }
