@@ -39,7 +39,7 @@ async function getSigners() {
   // Attach contracts
   for (let i = 0; i < signers.length; i++) {
     const walletFactory = await ethers.getContractFactory(
-      'AODMultisigWallet',
+      'AODMultisigWalletUpgradeable',
       signers[i]
     );
     const busdFactory = await ethers.getContractFactory(
