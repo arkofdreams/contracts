@@ -25,13 +25,29 @@ async function deployProxy(name, ...params) {
   return contract;
 }
 
+async function upgradeVersion(prevContractAddress) {
+  const factoryV2 = await ethers.getContractFactory(
+    'AODMultisigWalletUpgradeableV2'
+  );
+
+  const walletUpgradeableV2 = await upgrades.upgradeProxy(
+    prevContractAddress,
+    factoryV2,
+    {
+      kind: 'uups'
+    }
+  );
+
+  return walletUpgradeableV2;
+}
+
 async function getSigners() {
   // Get signers
   const signers = await ethers.getSigners();
 
   // Deploy contracts
   const busd = await deploy('BUSDToken');
-  const wallet = await deployProxy(
+  const walletUpgradeable = await deployProxy(
     'AODMultisigWalletUpgradeable',
     busd.address
   );
@@ -46,7 +62,9 @@ async function getSigners() {
       'BUSDToken',
       signers[i]
     );
-    signers[i].wallet = await walletFactory.attach(wallet.address);
+    signers[i].walletUpgradeable = await walletFactory.attach(
+      walletUpgradeable.address
+    );
     signers[i].busd = await busdFactory.attach(busd.address);
   }
   return signers;
@@ -80,16 +98,37 @@ describe('AODMultisigUpgradeable Tests', function () {
     ] = await getSigners();
 
     await owner.busd.mint(
-      owner.wallet.address,
+      owner.walletUpgradeable.address,
       ethers.utils.parseEther('1000000')
     );
-    await owner.wallet.grantRole(getRole('REQUESTER_ROLE'), requester.address);
-    await owner.wallet.grantRole(getRole('REQUESTER_ROLE'), approver1.address);
-    await owner.wallet.grantRole(getRole('APPROVER_ROLE'), approver1.address);
-    await owner.wallet.grantRole(getRole('APPROVER_ROLE'), approver2.address);
-    await owner.wallet.grantRole(getRole('APPROVER_ROLE'), approver3.address);
-    await owner.wallet.grantRole(getRole('APPROVER_ROLE'), approver4.address);
-    await owner.wallet.grantRole(getRole('APPROVER_ROLE'), approver5.address);
+    await owner.walletUpgradeable.grantRole(
+      getRole('REQUESTER_ROLE'),
+      requester.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('REQUESTER_ROLE'),
+      approver1.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('APPROVER_ROLE'),
+      approver1.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('APPROVER_ROLE'),
+      approver2.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('APPROVER_ROLE'),
+      approver3.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('APPROVER_ROLE'),
+      approver4.address
+    );
+    await owner.walletUpgradeable.grantRole(
+      getRole('APPROVER_ROLE'),
+      approver5.address
+    );
 
     this.signers = {
       owner,
@@ -105,12 +144,12 @@ describe('AODMultisigUpgradeable Tests', function () {
 
   it('Should request tx', async function () {
     const { requester, receiver } = this.signers;
-    await requester.wallet.request(
+    await requester.walletUpgradeable.request(
       1,
       receiver.address,
       ethers.utils.parseEther('100')
     );
-    const tx = await requester.wallet.txs(1);
+    const tx = await requester.walletUpgradeable.txs(1);
     expect(tx.beneficiary).to.equal(receiver.address);
     expect(tx.amount).to.equal(ethers.utils.parseEther('100'));
     expect(tx.approvals).to.equal(0);
@@ -120,7 +159,7 @@ describe('AODMultisigUpgradeable Tests', function () {
   it('Should error when using the same tx id', async function () {
     const { requester, receiver } = this.signers;
     await expect(
-      requester.wallet.request(
+      requester.walletUpgradeable.request(
         1,
         receiver.address,
         ethers.utils.parseEther('100')
@@ -130,12 +169,12 @@ describe('AODMultisigUpgradeable Tests', function () {
 
   it('Should request tx, have 1 approved and transferred', async function () {
     const { approver1, receiver } = this.signers;
-    await approver1.wallet.request(
+    await approver1.walletUpgradeable.request(
       2,
       receiver.address,
       ethers.utils.parseEther('100')
     );
-    const tx = await receiver.wallet.txs(2);
+    const tx = await receiver.walletUpgradeable.txs(2);
     expect(tx.beneficiary).to.equal(receiver.address);
     expect(tx.amount).to.equal(ethers.utils.parseEther('100'));
     expect(tx.approvals).to.equal(1);
@@ -147,10 +186,10 @@ describe('AODMultisigUpgradeable Tests', function () {
 
   it('Should now require 2 approvals', async function () {
     const { owner, approver1, approver2, receiver } = this.signers;
-    await owner.wallet.requiredApprovals(2);
-    await approver1.wallet.approve(1);
+    await owner.walletUpgradeable.requiredApprovals(2);
+    await approver1.walletUpgradeable.approve(1);
 
-    let tx = await receiver.wallet.txs(1);
+    let tx = await receiver.walletUpgradeable.txs(1);
     expect(tx.beneficiary).to.equal(receiver.address);
     expect(tx.amount).to.equal(ethers.utils.parseEther('100'));
     expect(tx.approvals).to.equal(1);
@@ -159,9 +198,9 @@ describe('AODMultisigUpgradeable Tests', function () {
       ethers.utils.parseEther('100')
     );
 
-    await approver2.wallet.approve(1);
+    await approver2.walletUpgradeable.approve(1);
 
-    tx = await receiver.wallet.txs(1);
+    tx = await receiver.walletUpgradeable.txs(1);
     expect(tx.beneficiary).to.equal(receiver.address);
     expect(tx.amount).to.equal(ethers.utils.parseEther('100'));
     expect(tx.approvals).to.equal(2);
@@ -173,25 +212,42 @@ describe('AODMultisigUpgradeable Tests', function () {
 
   it('Should not allow approving already executed tx', async function () {
     const { approver4 } = this.signers;
-    await expect(approver4.wallet.approve(1)).to.be.revertedWith(
+    await expect(approver4.walletUpgradeable.approve(1)).to.be.revertedWith(
       'Transaction already executed'
     );
   });
 
   it('Should not allow duplicate approving', async function () {
     const { approver1, receiver } = this.signers;
-    await approver1.wallet.request(
+    await approver1.walletUpgradeable.request(
       3,
       receiver.address,
       ethers.utils.parseEther('100')
     );
-    const tx = await receiver.wallet.txs(3);
+    const tx = await receiver.walletUpgradeable.txs(3);
     expect(tx.beneficiary).to.equal(receiver.address);
     expect(tx.amount).to.equal(ethers.utils.parseEther('100'));
     expect(tx.approvals).to.equal(1);
 
-    await expect(approver1.wallet.approve(3)).to.be.revertedWith(
+    await expect(approver1.walletUpgradeable.approve(3)).to.be.revertedWith(
       'Already approved'
     );
+  });
+
+  it('Should deploy new version', async function () {
+    const { owner } = this.signers;
+    await upgradeVersion(owner.walletUpgradeable.address);
+  });
+
+  it('Should save previous approvals state', async function () {
+    const { owner } = this.signers;
+    expect(await owner.walletUpgradeable.approvals()).to.equal(2);
+  });
+
+  it('Should add another one required approvals', async function () {
+    const { owner } = this.signers;
+    await owner.walletUpgradeable.requiredApprovals(2);
+
+    expect(await owner.walletUpgradeable.approvals()).to.equal(3);
   });
 });

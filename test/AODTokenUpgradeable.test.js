@@ -82,7 +82,8 @@ describe('AODTokenUpgradeable Tests', function () {
   before(async function () {
     const signers = await getSigners();
 
-    const [owner, minter, banner, investor1, investor2, badactor1] = signers;
+    const [owner, minter, banner, investor1, investor2, badactor1, badactor2] =
+      signers;
 
     this.signers = {
       owner,
@@ -90,7 +91,8 @@ describe('AODTokenUpgradeable Tests', function () {
       banner,
       investor1,
       investor2,
-      badactor1
+      badactor1,
+      badactor2
     };
   });
 
@@ -128,13 +130,20 @@ describe('AODTokenUpgradeable Tests', function () {
     ).to.be.reverted;
   });
 
-  it('Should be able banner to ban an address', async function () {
-    const { banner, badactor1 } = this.signers;
+  it('Should be able banner to blacklist an address', async function () {
+    const { banner, badactor1, badactor2 } = this.signers;
 
     await banner.aodTokenUpgradeable.blacklist(badactor1.address, true);
 
+    // Will be used for new version later
+    await banner.aodTokenUpgradeable.blacklist(badactor2.address, true);
+
     expect(
       await banner.aodTokenUpgradeable.isBlacklisted(badactor1.address)
+    ).to.equal(true);
+
+    expect(
+      await banner.aodTokenUpgradeable.isBlacklisted(badactor2.address)
     ).to.equal(true);
   });
 
@@ -175,6 +184,13 @@ describe('AODTokenUpgradeable Tests', function () {
   it('Should deploy new version', async function () {
     const { owner } = this.signers;
     await upgradeVersion(owner.aodTokenUpgradeable.address);
+  });
+
+  it('Should save previous blacklist state', async function () {
+    const { banner, badactor2 } = this.signers;
+    expect(
+      await banner.aodTokenUpgradeable.isBlacklisted(badactor2.address)
+    ).to.equal(true);
   });
 
   it('Should be able to mint twice of the amount', async function () {
