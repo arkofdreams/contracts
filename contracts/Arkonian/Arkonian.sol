@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 
 error InvalidRecipient();
 
-contract Arkonians is 
+contract Arkonian is 
   Ownable, 
   AccessControlEnumerable, 
   ERC721Burnable,
@@ -42,7 +42,7 @@ contract Arkonians is
   /**
    * @dev Initializes ERC721B; Sets the contract URI
    */
-  constructor(string memory uri) ERC721("Arkonians", "ARKONIANS") {
+  constructor(string memory uri) ERC721("Arkonian", "ARKONIAN") {
     _contractURI = uri;
 
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
