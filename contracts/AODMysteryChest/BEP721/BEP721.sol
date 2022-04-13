@@ -15,7 +15,7 @@ abstract contract BEP721 is IBEP721 {
   /**
    * @dev Shows the overall amount of tokens generated in the contract
    */
-  function totalSupply() public virtual view returns (uint256) {
+  function totalSupply() public view virtual returns (uint256) {
     return _supply;
   }
 

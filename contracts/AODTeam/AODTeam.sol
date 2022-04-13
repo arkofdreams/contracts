@@ -15,34 +15,29 @@ interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
-contract AODTeam is 
-  Context, 
-  Pausable, 
-  AccessControlEnumerable, 
-  ReentrancyGuard 
-{
+contract AODTeam is Context, Pausable, AccessControlEnumerable, ReentrancyGuard {
   //so we can invoke mint function in vest and invest
   using Address for address;
 
   // ============ Constants ============
-  
+
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   //Vested Date - April 21, 2024 (GMT)
   //the timestamp when all accounts are fully vested
-  uint64 constant public VESTED_DATE = 1713657600;
-  
+  uint64 public constant VESTED_DATE = 1713657600;
+
   //Lock Period - 6 months
   //the lock period to be applied after the token generated event
   //(after the lock period accounts can now withdraw)
-  uint64 constant public LOCK_PERIOD = 15552000;
-  
+  uint64 public constant LOCK_PERIOD = 15552000;
+
   //the total possoble locked AOD tokens that are allocated for this sale
-  uint256 constant public TOTAL_POSSIBLE_LOCKED_TOKENS =  90000000 ether;
-  
+  uint256 public constant TOTAL_POSSIBLE_LOCKED_TOKENS = 90000000 ether;
+
   //the total possoble vested AOD tokens that are allocated for this sale
-  uint256 constant public TOTAL_POSSIBLE_VESTED_TOKENS = 10000000 ether;
-  
+  uint256 public constant TOTAL_POSSIBLE_VESTED_TOKENS = 10000000 ether;
+
   // ============ Events ============
 
   event ERC20Released(address indexed token, uint256 amount);
@@ -72,14 +67,14 @@ contract AODTeam is
   uint64 public tokenGeneratedEvent;
   //the total AOD tokens that are currently allocated
   uint256 public currentlyAllocated;
-  
+
   //mapping of address to token sale stage
   mapping(address => Account) public accounts;
 
   // ============ Deploy ============
 
   /**
-   * @dev sets the tokens `aod` and `busd` to be swapped. Grants 
+   * @dev sets the tokens `aod` and `busd` to be swapped. Grants
    * `DEFAULT_ADMIN_ROLE` to the account that deploys the contract.
    */
   constructor(address aod) {
@@ -96,20 +91,16 @@ contract AODTeam is
   /**
    * @dev Returns the vested smart wallet address of the `beneficiary`
    */
-  function account(address beneficiary) 
-    public virtual view returns(Account memory) 
-  {
+  function account(address beneficiary) public view virtual returns (Account memory) {
     return accounts[beneficiary];
   }
 
   /**
-   * @dev Calculates the amount of tokens that are releasable. 
+   * @dev Calculates the amount of tokens that are releasable.
    * Default implementation is a linear vesting curve.
    */
-  function totalReleasableAmount(address beneficiary, uint64 timestamp) 
-    public view virtual returns (uint256) 
-  {
-    uint amount = totalVestedAmount(beneficiary, timestamp);
+  function totalReleasableAmount(address beneficiary, uint64 timestamp) public view virtual returns (uint256) {
+    uint256 amount = totalVestedAmount(beneficiary, timestamp);
     if (tokenGeneratedEvent > 0) {
       //the unlock date should be after the lock period
       uint64 unlockDate = tokenGeneratedEvent + LOCK_PERIOD;
@@ -118,22 +109,20 @@ contract AODTeam is
         amount += accounts[beneficiary].lockedTokens;
       }
     }
-    
+
     return amount - accounts[beneficiary].releasedTokens;
   }
 
   /**
-   * @dev Calculates the amount of tokens that has already vested. 
+   * @dev Calculates the amount of tokens that has already vested.
    * Default implementation is a linear vesting curve.
    */
-  function totalVestedAmount(address beneficiary, uint64 timestamp) 
-    public view virtual returns (uint256) 
-  {
+  function totalVestedAmount(address beneficiary, uint64 timestamp) public view virtual returns (uint256) {
     //if no tge or time now is less than tge
     if (tokenGeneratedEvent == 0) {
       //no tokens releasable
       return 0;
-    } 
+    }
     //get the beneficiary account info
     Account memory _account = accounts[beneficiary];
     //if time now is more than the vested date
@@ -182,14 +171,7 @@ contract AODTeam is
     //already account for the new tokens
     accounts[beneficiary].releasedTokens += releasable;
     //next mint tokens
-    address(AOD).functionCall(
-      abi.encodeWithSelector(
-        AOD.mint.selector, 
-        beneficiary, 
-        releasable
-      ), 
-      "Low-level mint failed"
-    );
+    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), "Low-level mint failed");
     //unlocked tokens are now unlocked
     accounts[beneficiary].unlocked = true;
     //finally emit released
@@ -199,12 +181,8 @@ contract AODTeam is
   /**
    * @dev Triggers the TGE
    */
-  function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
-  {
-    require(
-      tokenGeneratedEvent == 0, 
-      "Token generation event already triggered"
-    );
+  function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(tokenGeneratedEvent == 0, "Token generation event already triggered");
 
     require(timestamp <= VESTED_DATE, "Timestamp out of bounds");
     tokenGeneratedEvent = timestamp;
@@ -220,9 +198,7 @@ contract AODTeam is
   /**
    * @dev Allow an admin to manually vest a `beneficiary` for an `amount`
    */
-  function vest(address beneficiary, uint256 aodAmount) 
-    public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
-  {
+  function vest(address beneficiary, uint256 aodAmount) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     //check if vested
     require(!accounts[beneficiary].active, "Beneficiary already vested");
     //check if aodAmount
@@ -233,14 +209,10 @@ contract AODTeam is
     uint256 maxAllocation = TOTAL_POSSIBLE_LOCKED_TOKENS + TOTAL_POSSIBLE_VESTED_TOKENS;
     require(newAllocation <= maxAllocation, "Amount exceeds the available allocation");
     //split the AOD amount by 10%
-    uint256 lockedTokens = aodAmount * 1 ether / 10 ether;
-    uint256 vestingTokens = aodAmount * 9 ether / 10 ether;
+    uint256 lockedTokens = (aodAmount * 1 ether) / 10 ether;
+    uint256 vestingTokens = (aodAmount * 9 ether) / 10 ether;
     //now add the account
-    accounts[beneficiary] = Account(
-      lockedTokens,
-      vestingTokens,
-      0, false, true
-    );
+    accounts[beneficiary] = Account(lockedTokens, vestingTokens, 0, false, true);
     //add amount to the allocated
     currentlyAllocated += aodAmount;
   }
@@ -248,22 +220,22 @@ contract AODTeam is
   // ============ Emergency Methods ============
 
   /**
-   * @dev This contract should not hold any funds in the first place. 
+   * @dev This contract should not hold any funds in the first place.
    * This method exists to transfer out stuck funds.
    */
-  function emergencyTransfer(address to, uint256 amount) 
-    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
-  {
+  function emergencyTransfer(address to, uint256 amount) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     Address.sendValue(payable(to), amount);
   }
 
   /**
-   * @dev This contract should not hold any funds in the first place. 
+   * @dev This contract should not hold any funds in the first place.
    * This method exists to transfer out stuck funds.
    */
-  function emergencyERC20Transfer(address erc20, address to, uint256 amount) 
-    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
-  {
+  function emergencyERC20Transfer(
+    address erc20,
+    address to,
+    uint256 amount
+  ) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     SafeERC20.safeTransfer(IERC20(erc20), to, amount);
   }
 }

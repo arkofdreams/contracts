@@ -80,7 +80,10 @@ yarn-error.log*
 # vercel
 .vercel
 
-#Hardhat files
+# Hardhat files
 cache
 artifacts
 archives
+
+# Openzeppelin
+.openzeppelin/

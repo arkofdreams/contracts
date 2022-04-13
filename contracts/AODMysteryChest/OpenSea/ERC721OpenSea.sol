@@ -14,7 +14,7 @@ abstract contract ERC721OpenSea is IERC721OpenSea {
   /**
    * @dev Constructor function
    */
-  constructor (string memory contractURI_) {
+  constructor(string memory contractURI_) {
     _contractURI = contractURI_;
   }
 

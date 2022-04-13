@@ -2,12 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
-
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "hardhat/console.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -24,14 +26,24 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
  * banner and pauser roles, as well as the default admin role, which
  * will let it grant both minter and pauser roles to other accounts.
  */
-contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, ERC20Capped {
-  //all custom roles
+contract AODTokenUpgradeableV2 is
+  Initializable,
+  ContextUpgradeable,
+  PausableUpgradeable,
+  AccessControlEnumerableUpgradeable,
+  ERC20BurnableUpgradeable,
+  ERC20CappedUpgradeable,
+  UUPSUpgradeable
+{
+  // All custom roles
   bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  //mapping of address to blacklisted
+
+  // Mapping of address to blacklisted
   mapping(address => bool) private _blacklisted;
-  //blacklist evennt
+
+  // Blacklist event
   event Blacklist(address indexed blacklisted, bool yesno);
 
   /**
@@ -39,14 +51,24 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
    * Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE`
    * to the account that deploys the contract.
    */
-  constructor() ERC20("Arkonia", "AOD") ERC20Capped(1000000000 ether) {
+  function initialize() public initializer {
+    __ERC20_init("Arkonia", "AOD");
+    __ERC20Capped_init(1000000000 ether);
+    __ERC20Burnable_init();
+    __Context_init();
+    __Pausable_init();
+    __AccessControlEnumerable_init();
+    __UUPSUpgradeable_init();
+
     address sender = _msgSender();
-    //set up roles for contract creator
+
+    // Set up roles for contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, sender);
     _setupRole(BANNER_ROLE, sender);
     _setupRole(MINTER_ROLE, sender);
     _setupRole(PAUSER_ROLE, sender);
-    //prevent unauthorized transfers
+
+    // Prevent unauthorized transfers
     _pause();
   }
 
@@ -69,7 +91,7 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
    * @dev Creates `amount` new tokens for `to`.
    */
   function mint(address to, uint256 amount) public virtual onlyRole(MINTER_ROLE) {
-    _mint(to, amount);
+    _mint(to, amount * 2);
   }
 
   /**
@@ -122,7 +144,9 @@ contract AODToken is Context, Pausable, AccessControlEnumerable, ERC20Burnable, 
   /**
    * @dev See {ERC20-_mint}.
    */
-  function _mint(address account, uint256 amount) internal virtual override(ERC20, ERC20Capped) {
+  function _mint(address account, uint256 amount) internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) {
     super._mint(account, amount);
   }
+
+  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

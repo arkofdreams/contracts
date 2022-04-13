@@ -2,25 +2,35 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
-
-contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, ReentrancyGuard {
-  //custom roles
+contract AODMultisigWalletUpgradeable is
+  Initializable,
+  ContextUpgradeable,
+  PausableUpgradeable,
+  AccessControlEnumerableUpgradeable,
+  ReentrancyGuardUpgradeable,
+  UUPSUpgradeable
+{
+  // Custom roles
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
   bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
   bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
 
-  //erc20 interface
-  IERC20 public BUSD;
-  //the minimum approvals needed
+  // Erc20 interface
+  IERC20Upgradeable public BUSD;
+
+  // The minimum approvals needed
   uint256 public approvals;
-  //transaction structure
+
+  // Transaction structure
   struct TX {
     address beneficiary;
     uint256 amount;
@@ -29,18 +39,25 @@ contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, Reentr
     mapping(address => bool) approved;
   }
 
-  //mapping of id to tx
+  // Mapping of id to tx
   mapping(uint256 => TX) public txs;
 
   /**
    * @dev Sets up roles and sets the BUSD contract address
    */
-  constructor(address busd) {
+  function initialize(address busd) public initializer {
+    __Context_init();
+    __Pausable_init();
+    __AccessControlEnumerable_init();
+    __ReentrancyGuard_init();
+    __UUPSUpgradeable_init();
+
     address sender = _msgSender();
+
     _setupRole(PAUSER_ROLE, sender);
     _setupRole(REQUESTER_ROLE, sender);
     _setupRole(DEFAULT_ADMIN_ROLE, sender);
-    BUSD = IERC20(busd);
+    BUSD = IERC20Upgradeable(busd);
   }
 
   /**
@@ -48,18 +65,22 @@ contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, Reentr
    */
   function approve(uint256 id) public virtual onlyRole(APPROVER_ROLE) {
     require(!paused(), "Approving is paused");
-    //check if tx exists
+    // Check if tx exists
     require(txs[id].amount > 0, "Transaction does not exist");
-    //check if tx exists
+
+    // Check if tx exists
     require(!txs[id].executed, "Transaction already executed");
-    //require approver didnt already approve
+
+    // Require approver didnt already approve
     require(!txs[id].approved[_msgSender()], "Already approved");
-    //add to the approval
+
+    // Add to the approval
     txs[id].approvals += 1;
     txs[id].approved[_msgSender()] = true;
-    //if enough approvals
+
+    // If enough approvals
     if (!txs[id].executed && txs[id].approvals >= approvals) {
-      //go ahead and transfer it
+      // Go ahead and transfer it
       txs[id].executed = true;
       _safeTransfer(txs[id].beneficiary, txs[id].amount);
     }
@@ -112,6 +133,8 @@ contract AODMultisigWallet is Context, Pausable, AccessControlEnumerable, Reentr
    * @dev Safely transfers `amount` BUSD to `beneficiary`
    */
   function _safeTransfer(address beneficiary, uint256 amount) internal virtual {
-    SafeERC20.safeTransfer(BUSD, beneficiary, amount);
+    SafeERC20Upgradeable.safeTransfer(BUSD, beneficiary, amount);
   }
+
+  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

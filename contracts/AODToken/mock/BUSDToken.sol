@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
  */
 contract BUSDToken is AccessControlEnumerable, ERC20 {
   /**
-   * @dev Sets the name and symbol. Grants `DEFAULT_ADMIN_ROLE` to 
+   * @dev Sets the name and symbol. Grants `DEFAULT_ADMIN_ROLE` to
    * the account that deploys the contract.
    */
   constructor() ERC20("Binance USD", "BUSD") {

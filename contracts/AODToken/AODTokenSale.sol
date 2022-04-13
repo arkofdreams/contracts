@@ -15,12 +15,7 @@ interface IAOD is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
-contract AODTokenSale is 
-  Context, 
-  Pausable, 
-  AccessControlEnumerable, 
-  ReentrancyGuard 
-{
+contract AODTokenSale is Context, Pausable, AccessControlEnumerable, ReentrancyGuard {
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   //so we can invoke mint function in vest and invest
@@ -54,7 +49,7 @@ contract AODTokenSale is
   uint256 public totalPossibleVestedTokens;
   //the total AOD tokens that are currently allocated
   uint256 public currentlyAllocated;
-  
+
   //a data struct for an account
   struct Account {
     //the amount of BUSD they used to purchase AOD
@@ -75,12 +70,12 @@ contract AODTokenSale is
   mapping(address => Account) public accounts;
 
   /**
-   * @dev sets the tokens `aod` and `busd` to be swapped. Grants 
+   * @dev sets the tokens `aod` and `busd` to be swapped. Grants
    * `DEFAULT_ADMIN_ROLE` to the account that deploys the contract.
    */
   constructor(
-    address aod, 
-    address busd, 
+    address aod,
+    address busd,
     address fund,
     uint64 _startDate,
     uint64 _endDate,
@@ -126,9 +121,7 @@ contract AODTokenSale is
   /**
    * @dev Returns the vested smart wallet address of the `beneficiary`
    */
-  function account(address beneficiary) 
-    public virtual view returns(Account memory) 
-  {
+  function account(address beneficiary) public view virtual returns (Account memory) {
     return accounts[beneficiary];
   }
 
@@ -146,10 +139,7 @@ contract AODTokenSale is
     require(busdAmount <= maximumBUSDAmount, "Amount is too large");
     address beneficiary = _msgSender();
     //check allowance
-    require(
-      BUSD.allowance(beneficiary, address(this)) >= busdAmount, 
-      "Contract not approved to transfer BUSD"
-    );
+    require(BUSD.allowance(beneficiary, address(this)) >= busdAmount, "Contract not approved to transfer BUSD");
     //now accept the payment
     SafeERC20.safeTransferFrom(BUSD, beneficiary, _fund, busdAmount);
     //last start vesting
@@ -159,7 +149,7 @@ contract AODTokenSale is
   /**
    * @dev Returns true if user can vest
    */
-  function canVest() public view returns(bool) {
+  function canVest() public view returns (bool) {
     uint64 timenow = uint64(block.timestamp);
     return startDate <= timenow && timenow <= endDate;
   }
@@ -187,14 +177,7 @@ contract AODTokenSale is
     //already account for the new tokens
     accounts[beneficiary].releasedTokens += releasable;
     //next mint tokens
-    address(AOD).functionCall(
-      abi.encodeWithSelector(
-        AOD.mint.selector, 
-        beneficiary, 
-        releasable
-      ), 
-      "Low-level mint failed"
-    );
+    address(AOD).functionCall(abi.encodeWithSelector(AOD.mint.selector, beneficiary, releasable), "Low-level mint failed");
     //unlocked tokens are now unlocked
     accounts[beneficiary].unlocked = true;
     //finally emit released
@@ -204,28 +187,19 @@ contract AODTokenSale is
   /**
    * @dev Triggers the TGE
    */
-  function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
-  {
-    require(
-      tokenGeneratedEvent == 0, 
-      "Token generation event already triggered"
-    );
+  function trigger(uint64 timestamp) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(tokenGeneratedEvent == 0, "Token generation event already triggered");
 
-    require(
-      startDate <= timestamp && timestamp <= vestedDate, 
-      "Timestamp out of bounds"
-    );
+    require(startDate <= timestamp && timestamp <= vestedDate, "Timestamp out of bounds");
     tokenGeneratedEvent = timestamp;
   }
 
   /**
-   * @dev Calculates the amount of tokens that are releasable. 
+   * @dev Calculates the amount of tokens that are releasable.
    * Default implementation is a linear vesting curve.
    */
-  function totalReleasableAmount(address beneficiary, uint64 timestamp) 
-    public view virtual returns (uint256) 
-  {
-    uint amount = totalVestedAmount(beneficiary, timestamp);
+  function totalReleasableAmount(address beneficiary, uint64 timestamp) public view virtual returns (uint256) {
+    uint256 amount = totalVestedAmount(beneficiary, timestamp);
     if (tokenGeneratedEvent > 0) {
       //the unlock date should be after the lock period
       uint64 unlockDate = tokenGeneratedEvent + lockPeriod;
@@ -234,22 +208,20 @@ contract AODTokenSale is
         amount += accounts[beneficiary].lockedTokens;
       }
     }
-    
+
     return amount - accounts[beneficiary].releasedTokens;
   }
 
   /**
-   * @dev Calculates the amount of tokens that has already vested. 
+   * @dev Calculates the amount of tokens that has already vested.
    * Default implementation is a linear vesting curve.
    */
-  function totalVestedAmount(address beneficiary, uint64 timestamp) 
-    public view virtual returns (uint256) 
-  {
+  function totalVestedAmount(address beneficiary, uint64 timestamp) public view virtual returns (uint256) {
     //if no tge or time now is less than tge
     if (tokenGeneratedEvent == 0) {
       //no tokens releasable
       return 0;
-    } 
+    }
     //get the beneficiary account info
     Account memory _account = accounts[beneficiary];
     //if time now is more than the vested date
@@ -283,31 +255,29 @@ contract AODTokenSale is
   /**
    * @dev Allow an admin to manually vest a `beneficiary` for an `amount`
    */
-  function vest(address beneficiary, uint256 aodAmount) 
-    public virtual onlyRole(DEFAULT_ADMIN_ROLE) 
-  {
+  function vest(address beneficiary, uint256 aodAmount) public virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     //check for valid stage
     require(canVest(), "Not for sale");
-    _vest(beneficiary, aodAmount, 0); 
+    _vest(beneficiary, aodAmount, 0);
   }
 
   /**
-   * @dev This contract should not hold any funds in the first place. 
+   * @dev This contract should not hold any funds in the first place.
    * This method exists to transfer out stuck funds.
    */
-  function emergencyTransfer(address to, uint256 amount) 
-    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
-  {
+  function emergencyTransfer(address to, uint256 amount) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     Address.sendValue(payable(to), amount);
   }
 
   /**
-   * @dev This contract should not hold any funds in the first place. 
+   * @dev This contract should not hold any funds in the first place.
    * This method exists to transfer out stuck funds.
    */
-  function emergencyERC20Transfer(address erc20, address to, uint256 amount) 
-    external virtual onlyRole(DEFAULT_ADMIN_ROLE)
-  {
+  function emergencyERC20Transfer(
+    address erc20,
+    address to,
+    uint256 amount
+  ) external virtual onlyRole(DEFAULT_ADMIN_ROLE) {
     SafeERC20.safeTransfer(IERC20(erc20), to, amount);
   }
 
@@ -316,8 +286,8 @@ contract AODTokenSale is
    * `busdAmount` was paid
    */
   function _vest(
-    address beneficiary, 
-    uint256 aodAmount, 
+    address beneficiary,
+    uint256 aodAmount,
     uint256 busdAmount
   ) internal virtual {
     //check if vested
@@ -326,20 +296,12 @@ contract AODTokenSale is
     require(aodAmount > 0, "AOD amount missing");
     //calc max tokens that can be allocated
     uint256 maxAllocation = totalPossibleLockedTokens + totalPossibleVestedTokens;
-    require(
-      (currentlyAllocated + aodAmount) <= maxAllocation, 
-      "Amount exceeds the available allocation"
-    );
+    require((currentlyAllocated + aodAmount) <= maxAllocation, "Amount exceeds the available allocation");
     //split the AOD amount by 10%
-    uint256 lockedTokens = aodAmount * 1 ether / 10 ether;
-    uint256 vestingTokens = aodAmount * 9 ether / 10 ether;
+    uint256 lockedTokens = (aodAmount * 1 ether) / 10 ether;
+    uint256 vestingTokens = (aodAmount * 9 ether) / 10 ether;
     //now add the account
-    accounts[beneficiary] = Account(
-      busdAmount,
-      lockedTokens,
-      vestingTokens,
-      0, false, true
-    );
+    accounts[beneficiary] = Account(busdAmount, lockedTokens, vestingTokens, 0, false, true);
     //add amount to the allocated
     currentlyAllocated += aodAmount;
   }
