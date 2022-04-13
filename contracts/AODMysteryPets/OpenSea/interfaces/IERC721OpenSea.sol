@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 interface IERC721OpenSea is IERC721 {
   /**
    * @dev The base URI for token data ex. https://creatures-api.opensea.io/api/creature/
-   * Example Usage: 
+   * Example Usage:
    *  Strings.strConcat(baseTokenURI(), Strings.uint2str(tokenId))
    */
   function baseTokenURI() external view returns (string memory);

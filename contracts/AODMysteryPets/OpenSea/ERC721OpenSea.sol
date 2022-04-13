@@ -10,10 +10,10 @@ import "./interfaces/IERC721OpenSea.sol";
  */
 abstract contract ERC721OpenSea is IERC721OpenSea {
   string private _baseTokenURI;
-  
+
   /**
    * @dev The base URI for token data ex. https://creatures-api.opensea.io/api/creature/
-   * Example Usage: 
+   * Example Usage:
    *  Strings.strConcat(baseTokenURI(), Strings.uint2str(tokenId))
    */
   function baseTokenURI() public view returns (string memory) {

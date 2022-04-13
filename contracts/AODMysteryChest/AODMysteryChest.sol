@@ -15,17 +15,10 @@ import "@openzeppelin/contracts/utils/Context.sol";
 import "./BEP721/BEP721.sol";
 import "./OpenSea/ERC721OpenSea.sol";
 
-contract AODMysteryChest is
-  Context,
-  AccessControlEnumerable,
-  ERC721Burnable,
-  ERC721Pausable,
-  BEP721,
-  ERC721OpenSea
-{
+contract AODMysteryChest is Context, AccessControlEnumerable, ERC721Burnable, ERC721Pausable, BEP721, ERC721OpenSea {
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  
+
   string private _tokenURI;
 
   /*
@@ -48,26 +41,23 @@ contract AODMysteryChest is
     require(hasRole(PAUSER_ROLE, _msgSender()), "Must be a pauser");
     _;
   }
-  
+
   /**
    * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
    * account that deploys the contract.
    */
   constructor(
-    string memory _name, 
-    string memory _symbol, 
-    string memory _contractURI, 
+    string memory _name,
+    string memory _symbol,
+    string memory _contractURI,
     string memory tokenURI_
-  ) 
-    ERC721(_name, _symbol)
-    ERC721OpenSea(_contractURI) 
-  {
+  ) ERC721(_name, _symbol) ERC721OpenSea(_contractURI) {
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _setupRole(MINTER_ROLE, _msgSender());
     _setupRole(PAUSER_ROLE, _msgSender());
     _tokenURI = tokenURI_;
   }
-  
+
   /**
    * @dev Allows anyone to self mint a token
    */
@@ -77,12 +67,13 @@ contract AODMysteryChest is
     bytes calldata proof
   ) external virtual {
     //make sure the minter signed this off
-    require(hasRole(MINTER_ROLE, ECDSA.recover(
-      ECDSA.toEthSignedMessageHash(
-        keccak256(abi.encodePacked(tokenId, recipient))
+    require(
+      hasRole(
+        MINTER_ROLE,
+        ECDSA.recover(ECDSA.toEthSignedMessageHash(keccak256(abi.encodePacked(tokenId, recipient))), proof)
       ),
-      proof
-    )), "Invalid proof.");
+      "Invalid proof."
+    );
     //mint first and wait for errors
     _safeMint(recipient, tokenId);
     //add to supply
@@ -98,9 +89,7 @@ contract AODMysteryChest is
    *
    * - the caller must have the `MINTER_ROLE`.
    */
-  function mint(uint256 tokenId, address recipient) 
-    public virtual isMinter 
-  {
+  function mint(uint256 tokenId, address recipient) public virtual isMinter {
     //mint first and wait for errors
     _safeMint(recipient, tokenId);
     //add to supply
@@ -108,12 +97,10 @@ contract AODMysteryChest is
   }
 
   /**
-   * @dev override; super defined in ERC721; Specifies the name by 
-   *      which other contracts will recognize the BEP-721 token 
+   * @dev override; super defined in ERC721; Specifies the name by
+   *      which other contracts will recognize the BEP-721 token
    */
-  function name() 
-    public virtual view override(IBEP721, ERC721) returns(string memory) 
-  {
+  function name() public view virtual override(IBEP721, ERC721) returns (string memory) {
     return super.name();
   }
 
@@ -131,28 +118,17 @@ contract AODMysteryChest is
   }
 
   /**
-   * @dev override; super defined in ERC721; A concise name for the token, 
-   *      comparable to a ticker symbol 
+   * @dev override; super defined in ERC721; A concise name for the token,
+   *      comparable to a ticker symbol
    */
-  function symbol() 
-    public 
-    virtual 
-    view 
-    override(IBEP721, ERC721) returns(string memory) 
-  {
+  function symbol() public view virtual override(IBEP721, ERC721) returns (string memory) {
     return super.symbol();
   }
 
   /**
    * @dev See {IERC721Metadata-tokenURI}.
    */
-  function tokenURI(uint256 tokenId) 
-    public 
-    view 
-    virtual 
-    override
-    returns (string memory) 
-  {
+  function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
     require(_exists(tokenId), "Token does not exist");
     return _tokenURI;
   }

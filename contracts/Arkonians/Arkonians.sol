@@ -12,12 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 
 error InvalidRecipient();
 
-contract Arkonians is 
-  Ownable, 
-  AccessControlEnumerable, 
-  ERC721Burnable,
-  ERC721Pausable
-{
+contract Arkonians is Ownable, AccessControlEnumerable, ERC721Burnable, ERC721Pausable {
   using Strings for uint256;
 
   // ============ Constants ============
@@ -27,7 +22,7 @@ contract Arkonians is
   bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
   // ============ Storage ============
-  
+
   //immutable contract uri
   string private _contractURI;
 
@@ -56,7 +51,7 @@ contract Arkonians is
 
   /**
    * @dev The base URI for token data ex. https://creatures-api.opensea.io/api/creature/
-   * Example Usage: 
+   * Example Usage:
    *  Strings.strConcat(baseTokenURI(), Strings.uint2str(tokenId))
    */
   function baseTokenURI() public view returns (string memory) {
@@ -99,9 +94,7 @@ contract Arkonians is
   /**
    * @dev Creates a new token for the `recipient`
    */
-  function mint(address recipient, uint256 tokenId) 
-    external onlyRole(MINTER_ROLE) 
-  {
+  function mint(address recipient, uint256 tokenId) external onlyRole(MINTER_ROLE) {
     //make sure recipient is a valid address
     if (recipient == address(0)) revert InvalidRecipient();
     //mint
@@ -146,20 +139,15 @@ contract Arkonians is
   // ============ Linear Overrides ===========
 
   /**
-   * @dev Describes linear override for `supportsInterface` used in 
+   * @dev Describes linear override for `supportsInterface` used in
    * both `AccessControlEnumerable` and `ERC721`
    */
-  function supportsInterface(bytes4 interfaceId) 
-    public 
-    view 
-    override(AccessControlEnumerable, ERC721) 
-    returns(bool)
-  {
+  function supportsInterface(bytes4 interfaceId) public view override(AccessControlEnumerable, ERC721) returns (bool) {
     return super.supportsInterface(interfaceId);
   }
-  
+
   /**
-   * @dev Describes linear override for `_beforeTokenTransfer` used in 
+   * @dev Describes linear override for `_beforeTokenTransfer` used in
    * both `ERC721` and `Arkonians`
    */
   function _burn(uint256 tokenId) internal override {
@@ -168,7 +156,7 @@ contract Arkonians is
   }
 
   /**
-   * @dev Describes linear override for `_beforeTokenTransfer` used in 
+   * @dev Describes linear override for `_beforeTokenTransfer` used in
    * both `ERC721` and `ERC721Pausable`
    */
   function _beforeTokenTransfer(

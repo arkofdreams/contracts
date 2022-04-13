@@ -44,11 +44,11 @@ abstract contract ERC721Base is
 
   /**
    * @dev Grants `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the
-   * account that deploys the contract. Sets the contract's URI. 
+   * account that deploys the contract. Sets the contract's URI.
    */
   constructor(
-    string memory name_, 
-    string memory symbol_, 
+    string memory name_,
+    string memory symbol_,
     uint16 maxSupply_
   ) ERC721(name_, symbol_) {
     //provenance data
@@ -63,17 +63,15 @@ abstract contract ERC721Base is
   /**
    * @dev Returns the current id index
    */
-  function lastId() public view virtual returns(uint256) {
+  function lastId() public view virtual returns (uint256) {
     return _tokenIdTracker.current();
   }
 
   /**
-   * @dev override; super defined in ERC721; Specifies the name by 
-   * which other contracts will recognize the BEP-721 token 
+   * @dev override; super defined in ERC721; Specifies the name by
+   * which other contracts will recognize the BEP-721 token
    */
-  function name() 
-    public virtual view override(IBEP721, ERC721) returns(string memory) 
-  {
+  function name() public view virtual override(IBEP721, ERC721) returns (string memory) {
     return super.name();
   }
 
@@ -85,28 +83,17 @@ abstract contract ERC721Base is
   }
 
   /**
-   * @dev override; super defined in ERC721; A concise name for the token, 
-   *      comparable to a ticker symbol 
+   * @dev override; super defined in ERC721; A concise name for the token,
+   *      comparable to a ticker symbol
    */
-  function symbol() 
-    public 
-    virtual 
-    view 
-    override(IBEP721, ERC721) returns(string memory) 
-  {
+  function symbol() public view virtual override(IBEP721, ERC721) returns (string memory) {
     return super.symbol();
   }
 
   /**
    * @dev Shows the overall amount of tokens generated in the contract
    */
-  function totalSupply() 
-    public 
-    view 
-    virtual 
-    override(BEP721, ERC721Enumerable) 
-    returns (uint256) 
-  {
+  function totalSupply() public view virtual override(BEP721, ERC721Enumerable) returns (uint256) {
     return super.totalSupply();
   }
 
@@ -116,7 +103,7 @@ abstract contract ERC721Base is
   function unpause() public virtual onlyRole(PAUSER_ROLE) {
     _unpause();
   }
-  
+
   /**
    * @dev See {IERC165-supportsInterface}.
    */
@@ -131,7 +118,7 @@ abstract contract ERC721Base is
   }
 
   /**
-   * @dev Describes linear override for `_beforeTokenTransfer` used in 
+   * @dev Describes linear override for `_beforeTokenTransfer` used in
    * both `ERC721Enumerable` and `ERC721Pausable`
    */
   function _beforeTokenTransfer(
