@@ -1,5 +1,5 @@
-//to run this on testnet:
-// $ npx hardhat run scripts/Arkonians/deploy.js
+// to run this on testnet:
+// $ npx hardhat run scripts/Arkonian/deploy.js
 
 const hardhat = require('hardhat')
 
@@ -7,10 +7,11 @@ const contractURI = 'https://ipfs.io/ipfs/bafkreigizta6x5opnctbr3balqoqwwh3fojy5
 
 async function main() {
   await hre.run('compile')
-  const NFT = await hardhat.ethers.getContractFactory('Arkonians')
-  const nft = await NFT.deploy(contractURI)
-  await nft.deployed()
-  console.log('NFT contract deployed to (update .env):', nft.address)
+  const Arkonian = await hardhat.ethers.getContractFactory('Arkonian')
+  const arkonian = await Arkonian.deploy(contractURI)
+  await arkonian.deployed()
+
+  console.log('Arkonians contract deployed to (update .env):', arkonian.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
