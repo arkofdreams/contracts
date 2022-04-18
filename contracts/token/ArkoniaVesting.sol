@@ -16,7 +16,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -32,7 +32,7 @@ error InvalidCall();
 
 // ============ Contract ============
 
-contract ArkoniaVesting is Pausable, AccessControlEnumerable, ReentrancyGuard {
+contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
   //used in release()
   using Address for address;
 

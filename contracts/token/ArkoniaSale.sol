@@ -16,7 +16,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -31,9 +31,6 @@ interface IMintableToken is IERC20 {
 }
 
 interface IVesting is IERC20 {
-  /**
-   * @dev Allow an admin to manually vest a `beneficiary` for an `amount`
-   */
   function vest(
     address beneficiary, 
     uint256 amount, 
@@ -44,10 +41,12 @@ interface IVesting is IERC20 {
 
 // ============ Contract ============
 
-contract ArkoniaSale {
+contract ArkoniaSale is Ownable, ReentrancyGuard {
   // ============ Constants ============
 
+  //the token being vested
   IMintableToken public immutable TOKEN;
+  //the vesting rules
   IVesting public immutable VESTING;
 
   // ============ Storage ============
@@ -58,10 +57,8 @@ contract ArkoniaSale {
   uint256 public currentTokenLimit;
   //the total tokens that are currently allocated
   uint256 public currentTokenAllocated;
-  //the total amount of MATIC that has been withdrawn
-  uint256 public currentTotalWithdrawn;
-  //mapping of address to ether collected
-  mapping(address => uint256) public etherCollected;
+  //the end date of vesting for future purchases
+  uint256 public currentVestedDate;
 
   // ============ Deploy ============
 
@@ -74,6 +71,22 @@ contract ArkoniaSale {
     VESTING = vesting;
   }
 
+  // ============ Read Methods ============
+
+  /**
+   * @dev Returns true if can buy
+   */
+  function purchaseable(uint256 amount) public view returns(bool) {
+    // if no amount
+    return amount > 0 
+      //if no price
+      && currentTokenPrice > 0 
+      //if no limit
+      && currentTokenLimit > 0 
+      //if the amount exceeds the token limit
+      || (currentTokenAllocated + amount) <= currentTokenLimit;
+  }
+
   // ============ Write Methods ============
 
   /**
@@ -82,14 +95,37 @@ contract ArkoniaSale {
   function buy(address beneficiary, uint256 amount) 
     external payable nonReentrant 
   {
-    if (!canVest(amount)
+    if (!purchaseable(amount)
       //calculate eth amount = 1000 * 0.000005 ether
       || msg.value < ((amount * currentTokenPrice) / 1 ether)
-    ) revert InvalidVesting();
+    ) revert InvalidCall();
 
-    //track ether collected for refund
-    etherCollected[beneficiary] += msg.value;
     //last start vesting
-    _vest(beneficiary, amount);
+    VESTING.vest(beneficiary, amount, block.timestamp, currentVestedDate);
+    //add to allocated
+    currentTokenAllocated += amount;
+  }
+
+  // ============ Admin Methods ============
+
+  /**
+   * @dev Sets the current token limit
+   */
+  function setTokenLimit(uint256 limit) external onlyOwner {
+    currentTokenLimit = limit;
+  }
+
+  /**
+   * @dev Sets the current token price
+   */
+  function setTokenPrice(uint256 price) external onlyOwner {
+    currentTokenPrice = price;
+  }
+
+  /**
+   * @dev Sets the current vested date
+   */
+  function setVestedDate(uint256 date) external onlyOwner {
+    currentVestedDate = date;
   }
 }

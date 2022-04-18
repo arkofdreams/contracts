@@ -39,27 +39,8 @@ contract Treasury is
   event FundsApprovedFrom(address approver, uint256 id);
   event FundsApproved(uint256 id);
   event FundsWithdrawn(uint256 id);
-  
-  // ============ Constants ============
 
-  //custom roles
-  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
-  bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
-
-  // ============ Structures ============
-
-  //approval structure
-  struct Approval {
-    //max amount that can be approved
-    uint256 max;
-    //required approvals
-    uint8 required;
-    //cooldown between requests
-    uint64 cooldown;
-    //the next date we can make a request
-    uint64 next;
-  }
+  // ============ Structs ============
 
   //transaction structure
   struct TX {
@@ -70,32 +51,44 @@ contract Treasury is
     uint256 approvals;
     bool withdrawn;
     bool cancelled;
-    mapping(address => bool) approved;
   }
+
+  // ============ Constants ============
+
+  //custom roles
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
+  bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
+  //the minimum approvals needed
+  uint256 public constant MINIMUM_APPROVALS = 2;
+  //the minimum amount that can be requested
+  uint256 public constant MINIMUM_REQUEST = 500 ether;
+  //the divisor to determine which tier an amount should belong in
+  uint256 public constant TIER_RATE = 500 ether;
+  //the required amount of approvals needed per tier
+  uint256 public constant TIER_APPROVALS = 1;
+  //the cooldown increment per tier (1 day)
+  uint256 public constant TIER_COOLDOWN = 86400;
 
   // ============ Storage ============
 
-  //mapping of tier to approval
-  mapping(uint8 => Approval) public approvalTiers;
-
-  //mapping of id to tx
+  //mapping of tx id to tx
   mapping(uint256 => TX) public txs;
+  //mapping of tier to next
+  mapping(uint256 => uint256) public next;
+  //mapping of tx id to approver to approved
+  mapping(uint256 => mapping(address => bool)) public approved;
 
   // ============ Deploy ============
 
   /**
-   * @dev Sets up roles and approval tiers
+   * @dev Sets the name and symbol. Sets the fixed supply.
+   * Grants `DEFAULT_ADMIN_ROLE` to the specified admin.
    */
-  constructor(address admin) payable {
-    //setup roles
+  constructor(address admin) {
+    //set up roles for admin
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
-    //hard code tiers
-    //250 MATIC - 2 approvers - 1 day
-    approvalTiers[1] = Approval(250 ether, 2, 86400, 0);
-    //2,000 MATIC - 3 approvers - 7 days
-    approvalTiers[2] = Approval(2000 ether, 3, 604800, 0);
-    //5,000 MATIC - 4 approvers - 30 days
-    approvalTiers[3] = Approval(5000 ether, 4, 2592000, 0);
+    _setupRole(PAUSER_ROLE, admin);
   }
 
   /**
@@ -119,21 +112,39 @@ contract Treasury is
    * @dev Returns true if tx is approved
    */
   function isApproved(uint256 id) public view returns(bool) {
-    return txs[id].approvals >= approvalTiers[txs[id].tier].required;
+    (,uint256 required,) = tierInfo(txs[id]);
+    return txs[id].approvals >= required;
   }
 
   /**
-   * @dev Determine the tier of a given amount
+   * @dev Determine the tier information of a given amount
    */
-  function tier(uint256 amount) public view virtual returns(uint8) {
-    for (uint8 i = 1; i <= 4; i++) {
-      //if amount is less than the max tier
-      if (amount <= approvalTiers[i].max) {
-        return i;
-      }
-    }
+  function tierInfo(TX memory transaction) public view virtual returns(
+    uint256 tier,
+    uint256 required,
+    uint256 cooldown
+  ) {
+    return tierInfo(transaction.amount);
+  }
 
-    return 0;
+  /**
+   * @dev Determine the tier information of a given amount
+   */
+  function tierInfo(uint256 amount) public view virtual returns(
+    uint256 tier,
+    uint256 required,
+    uint256 cooldown
+  ) {
+    if (amount < MINIMUM_REQUEST) {
+      return (0, 0, 0);
+    }
+    
+    tier = amount / TIER_RATE;
+    cooldown = tier * TIER_COOLDOWN;
+    required = tier * TIER_APPROVALS;
+    if (required < MINIMUM_APPROVALS) {
+      required = MINIMUM_APPROVALS;
+    }
   }
 
   // ============ Write Methods ============
@@ -153,10 +164,10 @@ contract Treasury is
 
     address sender = _msgSender();
     //require approver didnt already approve
-    if(txs[id].approved[sender]) revert InvalidCall();
+    if(approved[id][sender]) revert InvalidCall();
     //add to the approval
     txs[id].approvals += 1; 
-    txs[id].approved[sender] = true;
+    approved[id][sender] = true;
 
     //emit approved
     emit FundsApprovedFrom(sender, id);
@@ -183,7 +194,8 @@ contract Treasury is
     //okay cancel it
     txs[id].cancelled = true;
     //update the cooldown
-    approvalTiers[txs[id].tier].next = uint64(block.timestamp);
+    (uint256 tier,,) = tierInfo(txs[id]);
+    next[tier] = uint64(block.timestamp);
     //emit cancelled
     emit RequestCancelled(id);
   }
@@ -201,8 +213,7 @@ contract Treasury is
   function request(
     uint256 id, 
     address beneficiary, 
-    uint256 amount,
-    string memory uri
+    uint256 amount
   ) public virtual onlyRole(REQUESTER_ROLE) {
     if (paused()
       //check if amount is more than the balance
@@ -215,17 +226,15 @@ contract Treasury is
     ) revert InvalidCall();
 
     //what tier level is this?
-    uint8 level = tier(amount);
+    (uint256 tier,,uint256 cooldown) = tierInfo(txs[id]);
     //check to see if a tier is found
-    if(approvalTiers[level].max == 0) revert InvalidCall();
+    if(tier == 0) revert InvalidCall();
     //get the time now
     uint64 timenow = uint64(block.timestamp);
     //the time should be greater than the last approved plus the cooldown
-    if(timenow < approvalTiers[level].next) revert InvalidCall();
+    if(timenow < next[tier]) revert InvalidCall();
 
     //create a new tx
-    txs[id].uri = uri;
-    txs[id].tier = level;
     txs[id].amount = amount;
     txs[id].beneficiary = beneficiary;
     
@@ -239,7 +248,7 @@ contract Treasury is
     }
 
     //update the next time they can make a request
-    approvalTiers[level].next = timenow + approvalTiers[level].cooldown;
+    next[tier] = timenow + cooldown;
   }
 
   /**

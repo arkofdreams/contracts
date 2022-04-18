@@ -18,7 +18,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
 // ============ Errors ============
 
@@ -26,10 +26,10 @@ error InvalidCall();
 
 // ============ Contract ============
 
-contract AODToken is 
+contract ArkoniaToken is 
   Context, 
   Pausable, 
-  AccessControlEnumerable, 
+  AccessControl, 
   ERC20Burnable, 
   ERC20Capped 
 {
