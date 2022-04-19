@@ -13,11 +13,14 @@ pragma solidity ^0.8.0;
 // http://www.arkofdreams.io/
 //
 
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlEnumerableUpgradeable.sol";
+
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 // ============ Errors ============
 
@@ -25,11 +28,13 @@ error InvalidCall();
 
 // ============ Contract ============
 
-contract Treasury is 
-  Context, 
-  Pausable, 
-  AccessControlEnumerable, 
-  ReentrancyGuard 
+contract Treasury is
+  Initializable,
+  ContextUpgradeable,
+  PausableUpgradeable,
+  AccessControlEnumerableUpgradeable,
+  ReentrancyGuardUpgradeable,
+  UUPSUpgradeable
 {
   // ============ Events ============
 
@@ -85,10 +90,16 @@ contract Treasury is
    * @dev Sets the name and symbol. Sets the fixed supply.
    * Grants `DEFAULT_ADMIN_ROLE` to the specified admin.
    */
-  constructor(address admin) {
+  function initialize() public initializer {
+    __Context_init();
+    __Pausable_init();
+    __AccessControlEnumerable_init();
+    __ReentrancyGuard_init();
+    __UUPSUpgradeable_init();
+
     //set up roles for admin
-    _setupRole(DEFAULT_ADMIN_ROLE, admin);
-    _setupRole(PAUSER_ROLE, admin);
+    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+    _setupRole(PAUSER_ROLE, _msgSender());
   }
 
   /**
@@ -105,6 +116,13 @@ contract Treasury is
   receive() external payable virtual {
     emit FundsReceived(_msgSender(), msg.value);
   }
+
+  /**
+   * @dev Required method for upgradeable contracts
+   */
+
+  // solhint-disable-next-line no-empty-blocks
+  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Read Methods ============
 
@@ -274,7 +292,7 @@ contract Treasury is
 
     //go ahead and transfer it
     txs[id].withdrawn = true;
-    Address.sendValue(payable(txs[id].beneficiary), txs[id].amount);
+    AddressUpgradeable.sendValue(payable(txs[id].beneficiary), txs[id].amount);
 
     //emit withdrawn
     emit FundsWithdrawn(id);

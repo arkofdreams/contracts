@@ -53,7 +53,7 @@ contract MysteryChest is
   constructor(
     string memory _name,
     string memory _symbol,
-    string memory _contractURI,
+    //string memory _contractURI,
     string memory tokenURI_
   ) ERC721(_name, _symbol) {
     _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -66,14 +66,14 @@ contract MysteryChest is
   /**
    * @dev Returns the string literal name
    */
-  function name() external pure returns (string memory) {
+  function name() public pure virtual override returns (string memory) {
     return "Arkonian Mystery Chest";
   }
 
   /**
    * @dev Symbol the string literal symbol
    */
-  function symbol() external pure returns (string memory) {
+  function symbol() public pure virtual override returns (string memory) {
     return "AMYSTERY";
   }
 
@@ -112,7 +112,7 @@ contract MysteryChest is
     //mint first and wait for errors
     _safeMint(recipient, tokenId);
     //add to supply
-    _addSupply(1);
+    //_addSupply(1);
   }
 
   // ============ Admin Methods ============
@@ -126,7 +126,7 @@ contract MysteryChest is
     //mint first and wait for errors
     _safeMint(recipient, tokenId);
     //add to supply
-    _addSupply(1);
+    //_addSupply(1);
   }
 
   /**
@@ -138,7 +138,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function pause() public virtual isPauser {
+  function pause() public virtual onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -151,7 +151,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function unpause() public virtual isPauser {
+  function unpause() public virtual onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
@@ -172,7 +172,7 @@ contract MysteryChest is
     public
     view
     virtual
-    override(AccessControlEnumerable, ERC721, IERC165)
+    override(AccessControl, ERC721)
     returns (bool)
   {
     return super.supportsInterface(interfaceId);
