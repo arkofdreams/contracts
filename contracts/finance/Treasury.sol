@@ -90,7 +90,7 @@ contract Treasury is
    * @dev Sets the name and symbol. Sets the fixed supply.
    * Grants `DEFAULT_ADMIN_ROLE` to the specified admin.
    */
-  function initialize() public initializer {
+  function initialize(address admin) public initializer {
     __Context_init();
     __Pausable_init();
     __AccessControlEnumerable_init();
@@ -98,8 +98,8 @@ contract Treasury is
     __UUPSUpgradeable_init();
 
     //set up roles for admin
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    _setupRole(PAUSER_ROLE, _msgSender());
+    _setupRole(DEFAULT_ADMIN_ROLE, admin);
+    _setupRole(PAUSER_ROLE, admin);
   }
 
   /**
@@ -142,13 +142,13 @@ contract Treasury is
     uint256 required,
     uint256 cooldown
   ) {
-    return tierInfo(transaction.amount);
+    return tierInfoByAmount(transaction.amount);
   }
 
   /**
    * @dev Determine the tier information of a given amount
    */
-  function tierInfo(uint256 amount) public view virtual returns(
+  function tierInfoByAmount(uint256 amount) public view virtual returns(
     uint256 tier,
     uint256 required,
     uint256 cooldown
