@@ -19,8 +19,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -44,8 +44,8 @@ contract Arkonomy is
   PausableUpgradeable,
   UUPSUpgradeable
 {
-  using Address for address;
-  using SafeMath for uint256;
+  using AddressUpgradeable for address;
+  using SafeMathUpgradeable for uint256;
 
   // ============ Events ============
 
@@ -67,11 +67,11 @@ contract Arkonomy is
   // ============ Store ============
 
   //where 5000 = 50.00%
-  uint16 private _interest = 5000;
+  uint16 private _interest;
   //where 20000 = 200.00%
-  uint16 private _sellFor = 20000;
+  uint16 private _sellFor;
   //where 5000 = 50.00%
-  uint16 private _buyFor = 5000;
+  uint16 private _buyFor;
 
   // ============ Deploy ============
 
@@ -94,6 +94,12 @@ contract Arkonomy is
     TREASURY = treasury;
     //set the token cap
     TOKEN_CAP = token.cap();
+
+    // Setup private values
+    _interest = 5000;
+    _sellFor = 20000;
+    _buyFor = 5000;
+
     //start paused
     _pause();
   }
@@ -167,7 +173,7 @@ contract Arkonomy is
     //so just send the tokens
     SafeERC20Upgradeable.safeTransfer(TOKEN, recipient, amount);
     //send the interest
-    Address.sendValue(
+    AddressUpgradeable.sendValue(
       payable(TREASURY),
       msg.value.mul(_interest).div(10000)
     );
@@ -184,7 +190,7 @@ contract Arkonomy is
     if(TOKEN.allowance(recipient, address(this)) < amount) 
       revert InvalidAmount();
     //send the ether
-    Address.sendValue(payable(recipient), buyingFor(amount));
+    AddressUpgradeable.sendValue(payable(recipient), buyingFor(amount));
     //now accept the payment
     SafeERC20Upgradeable.safeTransferFrom(TOKEN, recipient, address(this), amount);
     emit ERC20Received(recipient, amount);

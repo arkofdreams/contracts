@@ -6,10 +6,12 @@ if (process.env.BLOCKCHAIN_NETWORK != 'hardhat') {
   process.exit(1);
 }
 
-async function deploy(name, ...params) {
-  //deploy the contract
-  const ContractFactory = await ethers.getContractFactory(name);
-  const contract = await ContractFactory.deploy(...params);
+async function deployProxy(name, ...params) {
+  const factory = await ethers.getContractFactory(name);
+  const contract = await upgrades.deployProxy(factory, [...params], {
+    kind: 'uups'
+  });
+
   await contract.deployed();
 
   return contract;
@@ -31,12 +33,22 @@ async function getSigners(token, treasury, economy) {
   return signers;
 }
 
-describe('Arkonomy Tests', function () {
+function getRole(name) {
+  if (!name || name === 'DEFAULT_ADMIN_ROLE') {
+    return '0x0000000000000000000000000000000000000000000000000000000000000000';
+  }
+
+  return '0x' + Buffer.from(ethers.utils.solidityKeccak256(['string'], [name]).slice(2), 'hex').toString('hex');
+}
+
+describe.only('Arkonomy Tests', function () {
   before(async function () {
+    const signers = await ethers.getSigners();
+
     this.contracts = {};
-    this.contracts.token = await deploy('ArkoniaToken');
-    this.contracts.treasury = await deploy('Treasury');
-    this.contracts.economy = await deploy('Arkonomy', this.contracts.token.address, this.contracts.treasury.address);
+    this.contracts.token = await deployProxy('ArkoniaToken', signers[0].address);
+    this.contracts.treasury = await deployProxy('Treasury', signers[0].address);
+    this.contracts.economy = await deployProxy('Arkonomy', this.contracts.token.address, this.contracts.treasury.address);
 
     const [owner, user1, user2, user3, user4, fund] = await getSigners(
       this.contracts.token,
@@ -50,6 +62,10 @@ describe('Arkonomy Tests', function () {
       to: owner.withEconomy.address,
       value: ethers.utils.parseEther('10')
     });
+
+    //set owner roles
+    await owner.withToken.grantRole(getRole('PAUSER_ROLE'), owner.address);
+    await owner.withToken.grantRole(getRole('MINTER_ROLE'), owner.address);
 
     await owner.withToken.unpause();
     await owner.withToken.mint(owner.withEconomy.address, ethers.utils.parseEther('100'));
