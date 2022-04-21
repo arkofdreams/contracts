@@ -75,7 +75,7 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
   // ============ Deploy ============
 
   /**
-   * @dev Sets the `token`, `treasury` and `economy` addresses. Grants 
+   * @dev Sets the `token` address. Grants 
    * `DEFAULT_ADMIN_ROLE` to the account that deploys the contract.
    */
   constructor(IMintableToken token, address admin) {

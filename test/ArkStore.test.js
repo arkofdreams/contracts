@@ -71,13 +71,13 @@ describe('ArkStore Tests', function () {
   it('Should add tokens', async function () {
     const { admin } = this.signers;
     //sample limited with price
-    await admin.withStore.addToken(1, 5, ethers.utils.parseEther('0.06'), ethers.utils.parseEther('8'));
+    await admin.withStore.addToken(1, 5, ethers.utils.parseEther('0.06'));
     //sample unlimited with price
-    await admin.withStore.addToken(2, 0, ethers.utils.parseEther('0.01'), ethers.utils.parseEther('2'));
+    await admin.withStore.addToken(2, 0, ethers.utils.parseEther('0.01'));
     //sample limited with no price
-    await admin.withStore.addToken(3, 5, 0, 0);
+    await admin.withStore.addToken(3, 5, 0);
     //sample unlimited with no price
-    await admin.withStore.addToken(4, 0, 0, ethers.utils.parseEther('1'));
+    await admin.withStore.addToken(4, 0, 0);
 
     expect(await admin.withStore.maxSupply(1)).to.equal(5);
     expect(await admin.withStore.maxSupply(2)).to.equal(0);
@@ -88,11 +88,6 @@ describe('ArkStore Tests', function () {
     expect(await admin.withStore.ethPrice(2)).to.equal(ethers.utils.parseEther('0.01'));
     expect(await admin.withStore.ethPrice(3)).to.equal(0);
     expect(await admin.withStore.ethPrice(4)).to.equal(0);
-
-    expect(await admin.withStore.gratisPrice(1)).to.equal(ethers.utils.parseEther('8'));
-    expect(await admin.withStore.gratisPrice(2)).to.equal(ethers.utils.parseEther('2'));
-    expect(await admin.withStore.gratisPrice(3)).to.equal(0);
-    expect(await admin.withStore.gratisPrice(4)).to.equal(ethers.utils.parseEther('1'));
 
     expect(await admin.withStore.remainingSupply(1)).to.equal(5);
     expect(await admin.withStore.remainingSupply(3)).to.equal(5);
@@ -188,43 +183,6 @@ describe('ArkStore Tests', function () {
 
     await admin.withStore.redeem(holder2.address, 2, 2, signature);
     expect(await admin.withStore.balanceOf(holder2.address, 2)).to.equal(4);
-  });
-
-  it('Should support', async function () {
-    const { admin, holder1 } = this.signers;
-    //add 20 $GRATIS to holder1
-    await admin.withToken.mint(holder1.address, ethers.utils.parseEther('20'));
-    //buy item from store
-    await admin.withStore.support(holder1.address, 1, 1);
-
-    expect(await admin.withStore.balanceOf(holder1.address, 1)).to.equal(3);
-    expect(await admin.withToken.balanceOf(holder1.address)).to.equal(ethers.utils.parseEther('12'));
-    expect(await admin.withToken.balanceOf(admin.withStore.address)).to.equal(0);
-    //buy item from store
-    await admin.withStore.support(holder1.address, 2, 1);
-    expect(await admin.withStore.balanceOf(holder1.address, 2)).to.equal(3);
-    expect(await admin.withToken.balanceOf(holder1.address)).to.equal(ethers.utils.parseEther('10'));
-    expect(await admin.withToken.balanceOf(admin.withStore.address)).to.equal(0);
-    //buy item from store
-    await admin.withStore.support(holder1.address, 4, 10);
-    expect(await admin.withStore.balanceOf(holder1.address, 4)).to.equal(12);
-    expect(await admin.withToken.balanceOf(holder1.address)).to.equal(0);
-    expect(await admin.withToken.balanceOf(admin.withStore.address)).to.equal(0);
-  });
-
-  it('Should not support', async function () {
-    const { admin, holder1 } = this.signers;
-    //add 24 $GRATIS to holder1
-    await admin.withToken.mint(holder1.address, ethers.utils.parseEther('24'));
-    await expect(
-      //no allowance
-      admin.withStore.buy(holder1.address, 4, 2)
-    ).to.be.revertedWith('InvalidCall()');
-
-    await expect(
-      //max quantity
-      admin.withStore.buy(holder1.address, 1, 4)
-    ).to.be.revertedWith('InvalidCall()');
   });
 
   it('Should withdraw', async function () {

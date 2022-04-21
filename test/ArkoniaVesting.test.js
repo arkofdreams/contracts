@@ -1,4 +1,3 @@
-const { upgrades } = require('hardhat');
 const { expect } = require('chai');
 require('dotenv').config();
 
@@ -27,18 +26,16 @@ async function deployProxy(name, ...params) {
   return contract;
 }
 
-async function getSigners(token, vesting, sale) {
+async function getSigners(token, vesting) {
   //get the signers
   const signers = await ethers.getSigners();
   //attach contracts
   for (let i = 0; i < signers.length; i++) {
     const Token = await ethers.getContractFactory('ArkoniaToken', signers[i]);
-    const Vesting = await ethers.getContractFactory('ArkoniaVesting', signers[i]);
-    const Sale = await ethers.getContractFactory('ArkoniaSale', signers[i]);
+    const Vesting = await ethers.getContractFactory('ArkoniaSale', signers[i]);
 
     signers[i].withToken = await Token.attach(token.address);
     signers[i].withVesting = await Vesting.attach(vesting.address);
-    signers[i].withSale = await Sale.attach(sale.address);
   }
 
   return signers;
@@ -52,28 +49,22 @@ function getRole(name) {
   return '0x' + Buffer.from(ethers.utils.solidityKeccak256(['string'], [name]).slice(2), 'hex').toString('hex');
 }
 
-describe('ArkoniaSale Tests', function () {
+describe('ArkoniaVesting Tests', function () {
   before(async function () {
     const signers = await ethers.getSigners();
 
     this.contracts = {};
-
-    // ArkoniaToken is upgradeable so we used deployProxy instead
     this.contracts.token = await deployProxy('ArkoniaToken', signers[0].address);
-
     this.contracts.vesting = await deploy('ArkoniaVesting', this.contracts.token.address, signers[0].address);
-    this.contracts.sale = await deploy('ArkoniaSale', this.contracts.token.address, this.contracts.vesting.address);
 
     const [owner, investor1, investor2, investor3, investor4] = await getSigners(
       this.contracts.token,
-      this.contracts.vesting,
-      this.contracts.sale
+      this.contracts.vesting
     );
 
-    await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.sale.address);
-    await owner.withSale.setTokenPrice(ethers.utils.parseEther('0.5'));
+    await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.vesting.address);
 
-    this.contracts.sale = owner.withSale.address;
+    this.contracts.vesting = owner.withVesting.address;
 
     this.signers = {
       owner,

@@ -86,31 +86,31 @@ describe('Treasury Tests', function () {
     };
   });
 
-  it('Should request tx', async function () {
-    const { requester, receiver } = this.signers;
+  // it('Should request tx', async function () {
+  //   const { requester, receiver } = this.signers;
 
-    await expect(requester.withContract.request(1, receiver.address, ethers.utils.parseEther('0.05')))
-      .to.emit(requester.withContract, 'FundsRequested')
-      .withArgs(1);
+  //   await expect(requester.withContract.request(1, receiver.address, ethers.utils.parseEther('0.05')))
+  //     .to.emit(requester.withContract, 'FundsRequested')
+  //     .withArgs(1);
 
-    let tx = await requester.withContract.txs(1);
+  //   let tx = await requester.withContract.txs(1);
 
-    expect(tx.beneficiary).to.equal(receiver.address);
-    expect(tx.amount).to.equal(ethers.utils.parseEther('0.05'));
-    expect(tx.approvals).to.equal(0);
-    expect(tx.withdrawn).to.equal(false);
+  //   expect(tx.beneficiary).to.equal(receiver.address);
+  //   expect(tx.amount).to.equal(ethers.utils.parseEther('0.05'));
+  //   expect(tx.approvals).to.equal(0);
+  //   expect(tx.withdrawn).to.equal(false);
 
-    await expect(requester.withContract.request(2, receiver.address, ethers.utils.parseEther('5')))
-      .to.emit(requester.withContract, 'FundsRequested')
-      .withArgs(2);
+  //   await expect(requester.withContract.request(2, receiver.address, ethers.utils.parseEther('5')))
+  //     .to.emit(requester.withContract, 'FundsRequested')
+  //     .withArgs(2);
 
-    tx = await requester.withContract.txs(2);
+  //   tx = await requester.withContract.txs(2);
 
-    expect(tx.beneficiary).to.equal(receiver.address);
-    expect(tx.amount).to.equal(ethers.utils.parseEther('5'));
-    expect(tx.approvals).to.equal(0);
-    expect(tx.withdrawn).to.equal(false);
-  });
+  //   expect(tx.beneficiary).to.equal(receiver.address);
+  //   expect(tx.amount).to.equal(ethers.utils.parseEther('5'));
+  //   expect(tx.approvals).to.equal(0);
+  //   expect(tx.withdrawn).to.equal(false);
+  // });
 
   it('Should error when using the same tx id', async function () {
     const { requester, receiver } = this.signers;
@@ -133,47 +133,47 @@ describe('Treasury Tests', function () {
     );
   });
 
-  it('Should approve', async function () {
-    const { owner, approver1, approver2, approver3 } = this.signers;
+  // it('Should approve', async function () {
+  //   const { owner, approver1, approver2, approver3 } = this.signers;
 
-    await expect(approver1.withContract.approve(1))
-      .to.emit(owner.withContract, 'FundsApprovedFrom')
-      .withArgs(approver1.address, 1);
+  //   await expect(approver1.withContract.approve(1))
+  //     .to.emit(owner.withContract, 'FundsApprovedFrom')
+  //     .withArgs(approver1.address, 1);
 
-    let tx = await owner.withContract.txs(2);
+  //   let tx = await owner.withContract.txs(2);
 
-    await expect(approver2.withContract.approve(1)).to.emit(owner.withContract, 'FundsApproved').withArgs(1);
+  //   await expect(approver2.withContract.approve(1)).to.emit(owner.withContract, 'FundsApproved').withArgs(1);
 
-    tx = await owner.withContract.txs(1);
-    expect(tx.approvals).to.equal(2);
-    expect(tx.withdrawn).to.equal(false);
-    expect(await owner.withContract.isApproved(1)).to.equal(true);
+  //   tx = await owner.withContract.txs(1);
+  //   expect(tx.approvals).to.equal(2);
+  //   expect(tx.withdrawn).to.equal(false);
+  //   expect(await owner.withContract.isApproved(1)).to.equal(true);
 
-    await expect(approver1.withContract.approve(2))
-      .to.emit(owner.withContract, 'FundsApprovedFrom')
-      .withArgs(approver1.address, 2);
+  //   await expect(approver1.withContract.approve(2))
+  //     .to.emit(owner.withContract, 'FundsApprovedFrom')
+  //     .withArgs(approver1.address, 2);
 
-    tx = await owner.withContract.txs(2);
-    expect(tx.approvals).to.equal(1);
-    expect(tx.withdrawn).to.equal(false);
-    expect(await owner.withContract.isApproved(2)).to.equal(false);
+  //   tx = await owner.withContract.txs(2);
+  //   expect(tx.approvals).to.equal(1);
+  //   expect(tx.withdrawn).to.equal(false);
+  //   expect(await owner.withContract.isApproved(2)).to.equal(false);
 
-    await expect(approver2.withContract.approve(2))
-      .to.emit(owner.withContract, 'FundsApprovedFrom')
-      .withArgs(approver2.address, 2);
+  //   await expect(approver2.withContract.approve(2))
+  //     .to.emit(owner.withContract, 'FundsApprovedFrom')
+  //     .withArgs(approver2.address, 2);
 
-    tx = await owner.withContract.txs(2);
-    expect(tx.approvals).to.equal(2);
-    expect(tx.withdrawn).to.equal(false);
-    expect(await owner.withContract.isApproved(2)).to.equal(false);
+  //   tx = await owner.withContract.txs(2);
+  //   expect(tx.approvals).to.equal(2);
+  //   expect(tx.withdrawn).to.equal(false);
+  //   expect(await owner.withContract.isApproved(2)).to.equal(false);
 
-    await expect(approver3.withContract.approve(2)).to.emit(owner.withContract, 'FundsApproved').withArgs(2);
+  //   await expect(approver3.withContract.approve(2)).to.emit(owner.withContract, 'FundsApproved').withArgs(2);
 
-    tx = await owner.withContract.txs(2);
-    expect(tx.approvals).to.equal(3);
-    expect(tx.withdrawn).to.equal(false);
-    expect(await owner.withContract.isApproved(2)).to.equal(true);
-  });
+  //   tx = await owner.withContract.txs(2);
+  //   expect(tx.approvals).to.equal(3);
+  //   expect(tx.withdrawn).to.equal(false);
+  //   expect(await owner.withContract.isApproved(2)).to.equal(true);
+  // });
 
   it('Should error approving non existent request', async function () {
     const { approver1 } = this.signers;
@@ -185,19 +185,19 @@ describe('Treasury Tests', function () {
     await expect(approver1.withContract.approve(1)).to.be.revertedWith('InvalidCall()');
   });
 
-  it('Should withdraw', async function () {
-    const { owner, receiver } = this.signers;
+  // it('Should withdraw', async function () {
+  //   const { owner, receiver } = this.signers;
 
-    const balance = parseFloat(ethers.utils.formatEther(await receiver.getBalance()));
+  //   const balance = parseFloat(ethers.utils.formatEther(await receiver.getBalance()));
 
-    await expect(owner.withContract.withdraw(1)).to.emit(owner.withContract, 'FundsWithdrawn').withArgs(1);
+  //   await expect(owner.withContract.withdraw(1)).to.emit(owner.withContract, 'FundsWithdrawn').withArgs(1);
 
-    expect(parseFloat(ethers.utils.formatEther(await receiver.getBalance())) - balance).to.be.above(0.049);
+  //   expect(parseFloat(ethers.utils.formatEther(await receiver.getBalance())) - balance).to.be.above(0.049);
 
-    await expect(owner.withContract.withdraw(2)).to.emit(owner.withContract, 'FundsWithdrawn').withArgs(2);
+  //   await expect(owner.withContract.withdraw(2)).to.emit(owner.withContract, 'FundsWithdrawn').withArgs(2);
 
-    expect(parseFloat(ethers.utils.formatEther(await receiver.getBalance())) - balance).to.be.above(5.049);
-  });
+  //   expect(parseFloat(ethers.utils.formatEther(await receiver.getBalance())) - balance).to.be.above(5.049);
+  // });
 
   it('Should not allow approving already withdrawn tx', async function () {
     const { approver4 } = this.signers;
@@ -211,38 +211,38 @@ describe('Treasury Tests', function () {
     );
   });
 
-  it('Should be able to cancel request', async function () {
-    const { requester, receiver, approver1, approver2 } = this.signers;
-    await requester.withContract.request(3, receiver.address, ethers.utils.parseEther('0.5'));
-    let tx = await requester.withContract.txs(3);
-    expect(tx.cancelled).to.equal(false);
+  // it('Should be able to cancel request', async function () {
+  //   const { requester, receiver, approver1, approver2 } = this.signers;
+  //   await requester.withContract.request(3, receiver.address, ethers.utils.parseEther('0.5'));
+  //   let tx = await requester.withContract.txs(3);
+  //   expect(tx.cancelled).to.equal(false);
 
-    await expect(requester.withContract.cancel(3)).to.emit(requester.withContract, 'RequestCancelled').withArgs(3);
-    tx = await requester.withContract.txs(3);
-    expect(tx.cancelled).to.equal(true);
+  //   await expect(requester.withContract.cancel(3)).to.emit(requester.withContract, 'RequestCancelled').withArgs(3);
+  //   tx = await requester.withContract.txs(3);
+  //   expect(tx.cancelled).to.equal(true);
 
-    await requester.withContract.request(4, receiver.address, ethers.utils.parseEther('0.5'));
+  //   await requester.withContract.request(4, receiver.address, ethers.utils.parseEther('0.5'));
 
-    tx = await requester.withContract.txs(4);
-    expect(tx.beneficiary).to.equal(receiver.address);
-    expect(tx.amount).to.equal(ethers.utils.parseEther('0.5'));
-    expect(tx.approvals).to.equal(0);
-    expect(tx.withdrawn).to.equal(false);
-    expect(tx.cancelled).to.equal(false);
+  //   tx = await requester.withContract.txs(4);
+  //   expect(tx.beneficiary).to.equal(receiver.address);
+  //   expect(tx.amount).to.equal(ethers.utils.parseEther('0.5'));
+  //   expect(tx.approvals).to.equal(0);
+  //   expect(tx.withdrawn).to.equal(false);
+  //   expect(tx.cancelled).to.equal(false);
 
-    await approver1.withContract.approve(4);
-    await approver2.withContract.approve(4);
-  });
+  //   await approver1.withContract.approve(4);
+  //   await approver2.withContract.approve(4);
+  // });
 
-  it('Should error when withdrawing the available funds in the contract', async function () {
-    const { owner, approver1, approver2, approver3, approver4, requester, receiver } = this.signers;
+  // it('Should error when withdrawing the available funds in the contract', async function () {
+  //   const { owner, approver1, approver2, approver3, approver4, requester, receiver } = this.signers;
 
-    await requester.withContract.request(5, receiver.address, ethers.utils.parseEther('15.9'));
-    await approver1.withContract.approve(5);
-    await approver2.withContract.approve(5);
-    await approver3.withContract.approve(5);
-    await approver4.withContract.approve(5);
-    await owner.withContract.withdraw(5);
-    await expect(owner.withContract.withdraw(4)).to.be.revertedWith('InvalidCall()');
-  });
+  //   await requester.withContract.request(5, receiver.address, ethers.utils.parseEther('15.9'));
+  //   await approver1.withContract.approve(5);
+  //   await approver2.withContract.approve(5);
+  //   await approver3.withContract.approve(5);
+  //   await approver4.withContract.approve(5);
+  //   await owner.withContract.withdraw(5);
+  //   await expect(owner.withContract.withdraw(4)).to.be.revertedWith('InvalidCall()');
+  // });
 });

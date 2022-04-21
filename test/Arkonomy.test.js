@@ -41,7 +41,7 @@ function getRole(name) {
   return '0x' + Buffer.from(ethers.utils.solidityKeccak256(['string'], [name]).slice(2), 'hex').toString('hex');
 }
 
-describe.only('Arkonomy Tests', function () {
+describe('Arkonomy Tests', function () {
   before(async function () {
     const signers = await ethers.getSigners();
 
