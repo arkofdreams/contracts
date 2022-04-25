@@ -43,7 +43,7 @@ interface IERC20Burnable is IERC20 {
 // ============ Contract ============
 
 /**
- * @dev Gratitude store where members can buy other NFTs
+ * @dev ArkStore where members can buy other NFTs
  */
 contract ArkStore is 
   Ownable,
@@ -139,7 +139,7 @@ contract ArkStore is
    * @dev Returns the name
    */
   function name() external pure returns(string memory) {
-    return "Gifts of Gratitude";
+    return "ArkStore";
   }
 
   /**
@@ -155,7 +155,7 @@ contract ArkStore is
    * @dev Returns the symbol
    */
   function symbol() external pure returns(string memory) {
-    return "GOG";
+    return "ARKSTORE";
   }
 
   /**
@@ -208,7 +208,7 @@ contract ArkStore is
   /**
    * @dev Allows anyone to mint by purchasing with eth
    */
-  function buy(IERC20Burnable token, address to, uint256 id, uint256 quantity) 
+  function buyOtherToken(IERC20Burnable token, address to, uint256 id, uint256 quantity) 
     external payable nonReentrant 
   {
     //get price

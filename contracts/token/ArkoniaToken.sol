@@ -13,12 +13,15 @@ pragma solidity ^0.8.0;
 // http://www.arkofdreams.io/
 //
 
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20CappedUpgradeable.sol";
 
-import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 // ============ Errors ============
 
@@ -26,12 +29,14 @@ error InvalidCall();
 
 // ============ Contract ============
 
-contract ArkoniaToken is 
-  Context, 
-  Pausable, 
-  AccessControl, 
-  ERC20Burnable, 
-  ERC20Capped 
+contract ArkoniaToken is
+  Initializable,
+  ContextUpgradeable,
+  PausableUpgradeable,
+  AccessControlUpgradeable,
+  ERC20BurnableUpgradeable,
+  ERC20CappedUpgradeable,
+  UUPSUpgradeable
 {
   // ============ Constants ============
   
@@ -53,15 +58,29 @@ contract ArkoniaToken is
    * @dev Sets the name and symbol. Sets the fixed supply.
    * Grants `DEFAULT_ADMIN_ROLE` to the specified admin.
    */
-  constructor(address admin) 
-    ERC20("Arkonia", "AOD") 
-    ERC20Capped(1000000000 ether) 
-  {
+  
+  function initialize(address admin) public initializer {
+    __ERC20_init("Arkonia", "AOD");
+    __ERC20Capped_init(1000000000 ether);
+    __ERC20Burnable_init();
+
+    __Context_init();
+    __Pausable_init();
+    __AccessControl_init();
+    __UUPSUpgradeable_init();
+
     //set up roles for contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
     //prevent unauthorized transfers
     _pause();
   }
+
+  /**
+   * @dev Required method for upgradeable contracts
+   */
+
+  // solhint-disable-next-line no-empty-blocks
+  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Read Methods ============
 
@@ -145,7 +164,7 @@ contract ArkoniaToken is
    * @dev See {ERC20-_mint}.
    */
   function _mint(address account, uint256 amount) 
-    internal virtual override(ERC20, ERC20Capped) 
+    internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) 
   {
     super._mint(account, amount);
   }

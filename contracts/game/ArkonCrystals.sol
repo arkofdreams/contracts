@@ -39,7 +39,7 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
    * @dev Sets the name and symbol. Grants `DEFAULT_ADMIN_ROLE`
    * to the admin
    */
-  constructor(address admin) ERC20("Tokens of Gratitude", "GRATIS") {
+  constructor(address admin) ERC20("ArkonCrystals", "ARKON") {
     //set up roles for contract creator
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
     _setupRole(PAUSER_ROLE, admin);

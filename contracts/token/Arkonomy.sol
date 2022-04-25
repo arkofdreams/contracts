@@ -13,14 +13,17 @@ pragma solidity ^0.8.0;
 // http://www.arkofdreams.io/
 //
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 // ============ Errors ============
 
@@ -28,19 +31,21 @@ error InvalidAmount();
 
 // ============ Inferfaces ============
 
-interface IERC20Capped is IERC20 {
+interface IERC20CappedUpgradeable is IERC20Upgradeable {
   function cap() external returns(uint256);
 }
 
 // ============ Contract ============
 
-contract Arkonomy is 
-  AccessControl, 
-  ReentrancyGuard,
-  Pausable 
+contract Arkonomy is
+  Initializable,
+  AccessControlUpgradeable,
+  ReentrancyGuardUpgradeable,
+  PausableUpgradeable,
+  UUPSUpgradeable
 {
-  using Address for address;
-  using SafeMath for uint256;
+  using AddressUpgradeable for address;
+  using SafeMathUpgradeable for uint256;
 
   // ============ Events ============
 
@@ -53,20 +58,20 @@ contract Arkonomy is
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   //this is the contract address for $AOD
-  IERC20Capped public immutable TOKEN;
+  IERC20CappedUpgradeable public TOKEN;
   //this is the contract address for the $AOD treasury
-  address public immutable TREASURY;
+  address public TREASURY;
   //this is the token cap of $AOD
-  uint256 public immutable TOKEN_CAP;
+  uint256 public TOKEN_CAP;
 
   // ============ Store ============
 
   //where 5000 = 50.00%
-  uint16 private _interest = 5000;
+  uint16 private _interest;
   //where 20000 = 200.00%
-  uint16 private _sellFor = 20000;
+  uint16 private _sellFor;
   //where 5000 = 50.00%
-  uint16 private _buyFor = 5000;
+  uint16 private _buyFor;
 
   // ============ Deploy ============
 
@@ -74,7 +79,12 @@ contract Arkonomy is
    * @dev Grants `DEFAULT_ADMIN_ROLE` to the account that deploys the 
    * contract.
    */
-  constructor(IERC20Capped token, address treasury) payable {
+  function initialize(IERC20CappedUpgradeable token, address treasury) public initializer {
+    __AccessControl_init();
+    __ReentrancyGuard_init();
+    __Pausable_init();
+    __UUPSUpgradeable_init();
+
     //set up roles for the contract creator
     address sender = _msgSender();
     _setupRole(DEFAULT_ADMIN_ROLE, sender);
@@ -84,6 +94,12 @@ contract Arkonomy is
     TREASURY = treasury;
     //set the token cap
     TOKEN_CAP = token.cap();
+
+    // Setup private values
+    _interest = 5000;
+    _sellFor = 20000;
+    _buyFor = 5000;
+
     //start paused
     _pause();
   }
@@ -102,6 +118,13 @@ contract Arkonomy is
   receive() external payable virtual {
     emit DepositReceived(_msgSender(), msg.value);
   }
+
+  /**
+   * @dev Required method for upgradeable contracts
+   */
+
+  // solhint-disable-next-line no-empty-blocks
+  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Read Methods ============
 
@@ -148,9 +171,9 @@ contract Arkonomy is
     ) revert InvalidAmount();
     //we already received the ether
     //so just send the tokens
-    SafeERC20.safeTransfer(TOKEN, recipient, amount);
+    SafeERC20Upgradeable.safeTransfer(TOKEN, recipient, amount);
     //send the interest
-    Address.sendValue(
+    AddressUpgradeable.sendValue(
       payable(TREASURY),
       msg.value.mul(_interest).div(10000)
     );
@@ -167,9 +190,9 @@ contract Arkonomy is
     if(TOKEN.allowance(recipient, address(this)) < amount) 
       revert InvalidAmount();
     //send the ether
-    Address.sendValue(payable(recipient), buyingFor(amount));
+    AddressUpgradeable.sendValue(payable(recipient), buyingFor(amount));
     //now accept the payment
-    SafeERC20.safeTransferFrom(TOKEN, recipient, address(this), amount);
+    SafeERC20Upgradeable.safeTransferFrom(TOKEN, recipient, address(this), amount);
     emit ERC20Received(recipient, amount);
   }
 
