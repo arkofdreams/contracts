@@ -71,7 +71,8 @@ describe('ArkoniaSale Tests', function () {
     );
 
     await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.sale.address);
-    await owner.withSale.setTokenPrice(ethers.utils.parseEther('0.5'));
+    await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.vesting.address);
+    await owner.withVesting.grantRole(getRole('VESTER_ROLE'), this.contracts.sale.address);
 
     this.contracts.sale = owner.withSale.address;
 
@@ -84,5 +85,64 @@ describe('ArkoniaSale Tests', function () {
     };
   });
 
-  // todo: add tests
+  it('Should error buying when sale it not staged', async function () {
+    const { owner, investor1 } = this.signers;
+
+    await expect(
+      owner.withSale.buy(investor1.address, ethers.utils.parseEther('100000'), { value: ethers.utils.parseEther('1') })
+    ).to.be.revertedWith('InvalidCall()');
+  });
+
+  it('Should set the vesting stage', async function () {
+    const { owner } = this.signers;
+    await owner.withSale.setTokenLimit(ethers.utils.parseEther('1000000'));
+    await owner.withSale.setTokenPrice(ethers.utils.parseEther('0.00001'));
+
+    // May 1, 2024 12:00AM GMT
+    await owner.withSale.setVestedDate(1714521600);
+
+    expect(await owner.withSale.currentTokenLimit()).to.equal(ethers.utils.parseEther('1000000'));
+    expect(await owner.withSale.currentTokenPrice()).to.equal(ethers.utils.parseEther('0.00001'));
+    expect(await owner.withSale.currentVestedDate()).to.equal(1714521600);
+  });
+
+  it('Should buy tokens', async function () {
+    const { owner, investor1, investor2, investor3 } = this.signers;
+
+    await owner.withSale.buy(investor1.address, ethers.utils.parseEther('100000'), {
+      value: ethers.utils.parseEther('1')
+    });
+
+    expect((await owner.withVesting.vesting(investor1.address)).total).to.equal(ethers.utils.parseEther('100000'));
+
+    await owner.withSale.buy(investor2.address, ethers.utils.parseEther('200000'), {
+      value: ethers.utils.parseEther('2')
+    });
+
+    expect((await owner.withVesting.vesting(investor2.address)).total).to.equal(ethers.utils.parseEther('200000'));
+
+    await owner.withSale.buy(investor3.address, ethers.utils.parseEther('100000'), {
+      value: ethers.utils.parseEther('1')
+    });
+
+    expect((await owner.withVesting.vesting(investor3.address)).total).to.equal(ethers.utils.parseEther('100000'));
+  });
+
+  it('Should time travel to May 1, 2024', async function () {
+    await ethers.provider.send('evm_mine');
+    await ethers.provider.send('evm_setNextBlockTimestamp', [1714521601]);
+    await ethers.provider.send('evm_mine');
+  });
+
+  it('should release all', async function () {
+    const { owner, investor1, investor2, investor3 } = this.signers;
+
+    await owner.withVesting.release(investor1.address);
+    await owner.withVesting.release(investor2.address);
+    await owner.withVesting.release(investor3.address);
+
+    expect(await owner.withToken.balanceOf(investor1.address)).to.equal(ethers.utils.parseEther('100000'));
+    expect(await owner.withToken.balanceOf(investor2.address)).to.equal(ethers.utils.parseEther('200000'));
+    expect(await owner.withToken.balanceOf(investor3.address)).to.equal(ethers.utils.parseEther('100000'));
+  });
 });
