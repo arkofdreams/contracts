@@ -22,7 +22,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 // ============ Interfaces ============
 
-interface IMintableToken is IERC20 {
+interface IERC20Mintable is IERC20 {
   function mint(address to, uint256 amount) external;
 }
 
@@ -65,7 +65,7 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
   bytes32 public constant VESTER_ROLE = keccak256("VESTER_ROLE");
 
   //this is the contract address for $ARKONIA
-  IMintableToken public immutable TOKEN;
+  IERC20Mintable public immutable TOKEN;
 
   // ============ Store ============
 
@@ -78,7 +78,7 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
    * @dev Sets the `token` address. Grants 
    * `DEFAULT_ADMIN_ROLE` to the account that deploys the contract.
    */
-  constructor(IMintableToken token, address admin) {
+  constructor(IERC20Mintable token, address admin) {
     //set up roles for the admin
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
     //set the $AOD address

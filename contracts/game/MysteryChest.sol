@@ -13,27 +13,30 @@ pragma solidity ^0.8.0;
 // http://www.arkofdreams.io/
 //
 
-//implementation of ERC721
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+//implementation of ERC721
+import "ercx/contracts/token/ERC721/extensions/ERC721Supply.sol";
+import "ercx/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "ercx/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "ercx/contracts/token/ERC721/extensions/ERC721Operators.sol";
+import "ercx/contracts/token/ERC721/extensions/ERC721ContractURIStorage.sol";
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
-
-// ============ Errors ============
-
-error InvalidCall();
 
 // ============ Contract ============
 
 contract MysteryChest is 
   Context, 
   AccessControl, 
+  ERC721Supply,
   ERC721Burnable, 
-  ERC721Pausable 
+  ERC721Pausable,
+  ERC721Operators,
+  ERC721ContractURIStorage,
+  IERC721Metadata
 {
   // ============ Constants ============
 
@@ -46,19 +49,14 @@ contract MysteryChest is
 
   // ============ Deploy ============
 
-  /**
-   * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
-   * account that deploys the contract.
-   */
-  constructor(
-    string memory _name,
-    string memory _symbol,
-    //string memory _contractURI,
-    string memory tokenURI_
-  ) ERC721(_name, _symbol) {
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    _setupRole(PAUSER_ROLE, _msgSender());
-    _tokenURI = tokenURI_;
+  constructor(string memory uri, string memory fixedURI, address admin) {
+    //setup roles
+    _setupRole(DEFAULT_ADMIN_ROLE, admin);
+    _setupRole(PAUSER_ROLE, admin);
+    //set contract uri
+    _setContractURI(uri);
+    //set fixed token uri
+    _tokenURI = fixedURI;
   }
 
   // ============ Read Methods ============
@@ -80,10 +78,9 @@ contract MysteryChest is
   /**
    * @dev See {IERC721Metadata-tokenURI}.
    */
-  function tokenURI(uint256 tokenId) 
-    public view virtual override returns (string memory) 
-  {
-    require(_exists(tokenId), "Token does not exist");
+  function tokenURI(
+    uint256 tokenId
+  ) public view virtual override isToken(tokenId) returns(string memory) {
     return _tokenURI;
   }
 
@@ -110,9 +107,7 @@ contract MysteryChest is
       "Invalid proof."
     );
     //mint first and wait for errors
-    _safeMint(recipient, tokenId);
-    //add to supply
-    //_addSupply(1);
+    _safeMint(recipient, tokenId, "");
   }
 
   // ============ Admin Methods ============
@@ -124,9 +119,7 @@ contract MysteryChest is
     public virtual onlyRole(MINTER_ROLE) 
   {
     //mint first and wait for errors
-    _safeMint(recipient, tokenId);
-    //add to supply
-    //_addSupply(1);
+    _safeMint(recipient, tokenId, "");
   }
 
   /**
@@ -161,7 +154,7 @@ contract MysteryChest is
     address from,
     address to,
     uint256 tokenId
-  ) internal virtual override(ERC721, ERC721Pausable) {
+  ) internal virtual override(ERC721, ERC721Pausable, ERC721Supply) {
     super._beforeTokenTransfer(from, to, tokenId);
   }
 
@@ -172,7 +165,7 @@ contract MysteryChest is
     public
     view
     virtual
-    override(AccessControl, ERC721)
+    override(AccessControl, ERC721, IERC165)
     returns (bool)
   {
     return super.supportsInterface(interfaceId);
