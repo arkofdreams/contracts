@@ -68,7 +68,7 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
    * - the caller must have allowance for ``accounts``'s tokens of at least
    * `amount`.
    */
-  function burnFrom(address account, uint256 amount) public virtual {
+  function burnFrom(address account, uint256 amount) external virtual {
     address operator = _msgSender();
     if (!hasRole(BURNER_ROLE, operator)) {
       uint256 currentAllowance = allowance(account, operator);

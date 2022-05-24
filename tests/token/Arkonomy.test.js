@@ -48,7 +48,12 @@ describe('Arkonomy Tests', function () {
     this.contracts = {};
     this.contracts.token = await deployProxy('ArkoniaToken', signers[0].address);
     this.contracts.treasury = await deployProxy('Treasury', signers[0].address);
-    this.contracts.economy = await deployProxy('Arkonomy', this.contracts.token.address, this.contracts.treasury.address);
+    this.contracts.economy = await deployProxy(
+      'Arkonomy',
+      this.contracts.token.address,
+      this.contracts.treasury.address,
+      signers[0].address
+    );
 
     const [owner, user1, user2, user3, user4, fund] = await getSigners(
       this.contracts.token,

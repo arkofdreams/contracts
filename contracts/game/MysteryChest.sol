@@ -64,14 +64,14 @@ contract MysteryChest is
   /**
    * @dev Returns the string literal name
    */
-  function name() public pure virtual override returns (string memory) {
+  function name() external pure virtual override returns (string memory) {
     return "Arkonian Mystery Chest";
   }
 
   /**
    * @dev Symbol the string literal symbol
    */
-  function symbol() public pure virtual override returns (string memory) {
+  function symbol() external pure virtual override returns (string memory) {
     return "AMYSTERY";
   }
 
@@ -80,7 +80,7 @@ contract MysteryChest is
    */
   function tokenURI(
     uint256 tokenId
-  ) public view virtual override isToken(tokenId) returns(string memory) {
+  ) external view virtual override isToken(tokenId) returns(string memory) {
     return _tokenURI;
   }
 
@@ -116,7 +116,7 @@ contract MysteryChest is
    * @dev Allows admin to mint
    */
   function mint(uint256 tokenId, address recipient) 
-    public virtual onlyRole(MINTER_ROLE) 
+    external virtual onlyRole(MINTER_ROLE) 
   {
     //mint first and wait for errors
     _safeMint(recipient, tokenId, "");
