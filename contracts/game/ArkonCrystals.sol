@@ -17,6 +17,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 // ============ Errors ============
 
@@ -85,10 +86,30 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
   /**
    * @dev Creates `amount` new tokens for `to`.
    */
-  function mint(address to, uint256 amount) 
-    public virtual whenNotPaused onlyRole(MINTER_ROLE)  
-  {
+  function mint(
+    address to, 
+    uint256 amount
+  ) external whenNotPaused onlyRole(MINTER_ROLE) {
     _mint(to, amount);
+  }
+  
+  /**
+   * @dev Allows anyone to redeem with a proof
+   */
+  function redeem(
+    address to, 
+    uint256 amount,
+    bytes memory proof
+  ) external whenNotPaused {
+    //make sure the minter signed this off
+    if (!hasRole(MINTER_ROLE, ECDSA.recover(
+      ECDSA.toEthSignedMessageHash(
+        keccak256(abi.encodePacked("redeem", to, amount))
+      ),
+      proof
+    ))) revert InvalidCall();
+    //mint out
+     _mint(to, amount);
   }
 
   /**

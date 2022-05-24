@@ -43,9 +43,9 @@ interface IERC20Burnable is IERC20 {
 // ============ Contract ============
 
 /**
- * @dev ArkStore where members can buy other NFTs
+ * @dev ArkRewards where members can buy merchant vouchers
  */
-contract ArkStore is 
+contract ArkRewards is 
   Ownable,
   ReentrancyGuard,
   ERC1155Burnable,
@@ -68,20 +68,22 @@ contract ArkStore is
   bytes32 public constant FUNDER_ROLE = keccak256("FUNDER_ROLE");
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
   bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
+  bytes32 public constant TRANSFER_ROLE = keccak256("TRANSFER_ROLE");
 
   // ============ Storage ============
 
   IERC20Burnable[] public acceptedERC20s;
 
+  //the contract metadata
+  string private _contractURI;
   //a count of total items
   uint256 public totalTokens;
   //mapping of token id to token info (max, price)
   mapping(uint256 => Token) private _tokens;
   //mapping of token id to contract to price
   mapping(uint256 => mapping(IERC20Burnable => uint256)) private _erc20Prices;
-  //the contract metadata
-  string private _contractURI;
 
   // ============ Deploy ============
 
@@ -139,13 +141,13 @@ contract ArkStore is
    * @dev Returns the name
    */
   function name() external pure returns(string memory) {
-    return "ArkStore";
+    return "ArkRewards";
   }
 
   /**
    * @dev Get the remaining supply for a token
    */
-  function remainingSupply(uint256 id) public view returns(uint256) {
+  function remainingSupply(uint256 id) external view returns(uint256) {
     uint256 max = maxSupply(id);
     if (max == 0) revert InvalidCall();
     return max - totalSupply(id);
@@ -155,7 +157,7 @@ contract ArkStore is
    * @dev Returns the symbol
    */
   function symbol() external pure returns(string memory) {
-    return "ARKSTORE";
+    return "ARKRWD";
   }
 
   /**
@@ -181,7 +183,7 @@ contract ArkStore is
    * Clients calling this function must replace the `\{id\}` substring with the
    * actual token type ID.
    */
-  function uri(uint256 id) public view virtual override returns(string memory) {
+  function uri(uint256 id) public view override returns(string memory) {
     if (exists(id)) {
       return string(abi.encodePacked(super.uri(id), "/", id.toString(), ".json"));
     }
@@ -247,6 +249,88 @@ contract ArkStore is
     _mintSupply(to, id, quantity);
   }
 
+  // ============ Operator Methods ============
+
+  /**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can burn
+   */
+  function operatorBurnFrom(
+    address from, 
+    uint256 tokenId, 
+    uint256 amount
+  ) external onlyRole(BURNER_ROLE) {
+    //now safely transfer
+    _burn(from, tokenId, amount);
+  }
+
+  /**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can burn
+   */
+  function operatorBurnBatchFrom(
+    address from, 
+    uint256[] memory ids,
+    uint256[] memory amounts
+  ) external onlyRole(BURNER_ROLE) {
+    //now burn
+    _burnBatch(from, ids, amounts);
+  }/**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can transfer
+   */
+  function operatorTransferFrom(
+    address from,
+    address to,
+    uint256 tokenId,
+    uint256 amount
+  ) external {
+    operatorTransferFrom(from, to, tokenId, amount, "");
+  }
+
+  /**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can safely transfer
+   */
+  function operatorTransferFrom(
+    address from,
+    address to,
+    uint256 tokenId,
+    uint256 amount,
+    bytes memory data
+  ) public onlyRole(TRANSFER_ROLE) {
+    //now safely transfer
+    _safeTransferFrom(from, to, tokenId, amount, data);
+  }
+
+  /**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can transfer
+   */
+  function operatorTransferBatchFrom(
+    address from,
+    address to,
+    uint256[] memory ids,
+    uint256[] memory amounts
+  ) external {
+    operatorTransferBatchFrom(from, to, ids, amounts, "");
+  }
+
+  /**
+   * @dev Instead of the owner needing to approve (and pay gas)
+   * The operator can safely transfer
+   */
+  function operatorTransferBatchFrom(
+    address from,
+    address to,
+    uint256[] memory ids,
+    uint256[] memory amounts,
+    bytes memory data
+  ) public onlyRole(TRANSFER_ROLE) {
+    //now safely transfer
+    _safeBatchTransferFrom(from, to, ids, amounts, data);
+  }
+
   // ============ Admin Methods ============
 
   /**
@@ -279,14 +363,14 @@ contract ArkStore is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
@@ -343,7 +427,6 @@ contract ArkStore is
   function supportsInterface(bytes4 interfaceId) 
     public 
     view 
-    virtual 
     override(AccessControl, ERC1155) 
     returns(bool) 
   {
@@ -361,7 +444,7 @@ contract ArkStore is
     uint256[] memory ids,
     uint256[] memory amounts,
     bytes memory data
-  ) internal virtual override(ERC1155, ERC1155Pausable, ERC1155Supply) {
+  ) internal override(ERC1155, ERC1155Pausable, ERC1155Supply) {
     super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
   }
 }

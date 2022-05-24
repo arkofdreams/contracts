@@ -89,7 +89,7 @@ contract MysteryChest is
   /**
    * @dev Allows anyone to self mint a token
    */
-  function lazyMint(
+  function redeem(
     uint256 tokenId,
     address recipient,
     bytes calldata proof

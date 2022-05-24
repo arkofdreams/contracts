@@ -23,10 +23,13 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 
 // ============ Errors ============
 
-error InvalidRecipient();
+error InvalidCall();
 
 // ============ Contract ============
 
+/**
+ * @dev The in game character that is soulbound
+ */
 contract Arkonian is 
   Ownable, 
   AccessControlEnumerable, 
@@ -39,7 +42,6 @@ contract Arkonian is
 
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  bytes32 public constant CURATOR_ROLE = keccak256("CURATOR_ROLE");
 
   // ============ Storage ============
 
@@ -55,11 +57,11 @@ contract Arkonian is
   /**
    * @dev Initializes ERC721B; Sets the contract URI
    */
-  constructor(string memory uri) ERC721("Arkonian", "ARKONIAN") {
+  constructor(string memory uri, address admin) ERC721("Arkonian", "ARKONIAN") {
     _contractURI = uri;
 
-    _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    _setupRole(PAUSER_ROLE, _msgSender());
+    _setupRole(DEFAULT_ADMIN_ROLE, admin);
+    _setupRole(PAUSER_ROLE, admin);
   }
 
   // ============ Read Methods ===========
@@ -109,9 +111,12 @@ contract Arkonian is
   /**
    * @dev Creates a new token for the `recipient`
    */
-  function mint(address recipient, uint256 tokenId) external onlyRole(MINTER_ROLE) {
-    //make sure recipient is a valid address
-    if (recipient == address(0)) revert InvalidRecipient();
+  function mint(
+    address recipient, 
+    uint256 tokenId
+  ) external onlyRole(MINTER_ROLE) {
+    //if recipient is a valid address 
+    if (recipient == address(0) ) revert InvalidCall();
     //mint
     _safeMint(recipient, tokenId);
     //increment supply
@@ -151,13 +156,44 @@ contract Arkonian is
     _unpause();
   }
 
+  // ============ Internal Methods ===========
+
+  /**
+   * @dev Adding soulbound requirements
+   */
+  function _beforeTokenTransfer(
+    address from,
+    address to,
+    uint256 tokenId
+  ) internal override(ERC721, ERC721Pausable) {
+    //revert if transfer or recipient has a character already
+    if (from != address(0) || balanceOf(to) > 0) revert InvalidCall();
+    super._beforeTokenTransfer(from, to, tokenId);
+  }
+
+  /**
+   * @dev Adding soulbound requirements
+   */
+  function _approve(address, uint256) internal pure override {
+    revert InvalidCall();
+  }
+
+  /**
+   * @dev Adding soulbound requirements
+   */
+  function _setApprovalForAll(address, address, bool) internal pure override {
+    revert InvalidCall();
+  }
+
   // ============ Linear Overrides ===========
 
   /**
    * @dev Describes linear override for `supportsInterface` used in
    * both `AccessControlEnumerable` and `ERC721`
    */
-  function supportsInterface(bytes4 interfaceId) public view override(AccessControlEnumerable, ERC721) returns (bool) {
+  function supportsInterface(
+    bytes4 interfaceId
+  ) public view override(AccessControlEnumerable, ERC721) returns (bool) {
     return super.supportsInterface(interfaceId);
   }
 
@@ -166,19 +202,7 @@ contract Arkonian is
    * both `ERC721` and `Arkonians`
    */
   function _burn(uint256 tokenId) internal override {
-    super._burn(tokenId);
     _totalSupply -= 1;
-  }
-
-  /**
-   * @dev Describes linear override for `_beforeTokenTransfer` used in
-   * both `ERC721` and `ERC721Pausable`
-   */
-  function _beforeTokenTransfer(
-    address from,
-    address to,
-    uint256 tokenId
-  ) internal override(ERC721, ERC721Pausable) {
-    super._beforeTokenTransfer(from, to, tokenId);
+    super._burn(tokenId);
   }
 }

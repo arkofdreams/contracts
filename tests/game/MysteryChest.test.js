@@ -82,14 +82,14 @@ describe('MysteryChest Tests', function () {
     ]
 
     //let the contract owner lazy mint a token for the token owner
-    await admin.withContract.lazyMint(
+    await admin.withContract.redeem(
       tokenId2,
       tokenOwner.address,
       signatures[0]
     )
 
     //let the token owner lazy mint a token for themself
-    await tokenOwner.withContract.lazyMint(
+    await tokenOwner.withContract.redeem(
       tokenId3,
       tokenOwner.address,
       signatures[1]

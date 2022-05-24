@@ -17,12 +17,12 @@ task('accounts', 'Prints the list of accounts', async () => {
 // Get API key based on the BLOCKCHAIN_NETWORK in the .env file
 function getApiKey() {
   switch (process.env.BLOCKCHAIN_NETWORK) {
-    case 'testnet':
-    case 'mainnet':
-      return process.env.BLOCKCHAIN_SCANNER_KEY;
+    case 'rinkeby':
+    case 'ethereum':
+      return process.env.BLOCKCHAIN_ETHEREUM_SCANNER_KEY;
     case 'mumbai':
     case 'polygon':
-      return process.env.BLOCKCHAIN_POLYGONSCAN_API_KEY;
+      return process.env.BLOCKCHAIN_POLYGON_SCANNER_KEY;
     default:
       return '';
   }
@@ -47,33 +47,39 @@ module.exports = {
       // We have to set this before all event dates e.g. private sale, presale
       initialDate: new Date('January 1, 2021 00:00:00').toString()
     },
-    localhost: {
-      url: 'http://127.0.0.1:8545',
-      accounts: [process.env.BLOCKCHAIN_LOCALHOST_PRIVATE_KEY],
-      wallets: {
-        fund: process.env.BLOCKCHAIN_LOCALHOST_FUND_ADDRESS
-      },
-      contracts: {}
-    },
     mumbai: {
-      url:
-        'https://rpc-mumbai.maticvigil.com/v1/' +
-        process.env.BLOCKCHAIN_MATIC_RPC_API_KEY,
+      url: "https://matic-mumbai.chainstacklabs.com",
+      scanner: 'https://mumbai.polygonscan.com',
       accounts: [process.env.BLOCKCHAIN_MUMBAI_PRIVATE_KEY],
-      wallets: {
-        fund: process.env.BLOCKCHAIN_MUMBAI_FUND_ADDRESS
-      },
-      contracts: {}
+      contracts: {
+        treasury: process.env.BLOCKCHAIN_MUMBAI_TREASURY_ADDRESS,
+        token: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_TOKEN_ADDRESS,
+        vesting: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_VESTING_ADDRESS,
+        sale: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_SALE_ADDRESS,
+        arkonomy: process.env.BLOCKCHAIN_MUMBAI_ARKONONMY_ADDRESS,
+        crystal: process.env.BLOCKCHAIN_MUMBAI_ARKON_CRYSTALS_ADDRESS,
+        arkonian: process.env.BLOCKCHAIN_MUMBAI_ARKONIAN_ADDRESS,
+        store: process.env.BLOCKCHAIN_MUMBAI_ARK_STORE_ADDRESS,
+        rewards: process.env.BLOCKCHAIN_MUMBAI_ARK_REWARDS_ADDRESS,
+        chest: process.env.BLOCKCHAIN_MUMBAI_MYSTERY_CHEST_ADDRESS
+      }
     },
     polygon: {
-      url:
-        'https://rpc-mainnet.maticvigil.com/v1/' +
-        process.env.BLOCKCHAIN_MATIC_RPC_API_KEY,
+      url: "https://polygon-rpc.com/",
+      scanner: 'https://polygonscan.com',
       accounts: [process.env.BLOCKCHAIN_POLYGON_PRIVATE_KEY],
-      wallets: {
-        fund: process.env.BLOCKCHAIN_POLYGON_FUND_ADDRESS
-      },
-      contracts: {}
+      contracts: {
+        treasury: process.env.BLOCKCHAIN_POLYGON_TREASURY_ADDRESS,
+        token: process.env.BLOCKCHAIN_POLYGON_ARKONIA_TOKEN_ADDRESS,
+        vesting: process.env.BLOCKCHAIN_POLYGON_ARKONIA_VESTING_ADDRESS,
+        sale: process.env.BLOCKCHAIN_POLYGON_ARKONIA_SALE_ADDRESS,
+        arkonomy: process.env.BLOCKCHAIN_POLYGON_ARKONONMY_ADDRESS,
+        crystal: process.env.BLOCKCHAIN_POLYGON_ARKON_CRYSTALS_ADDRESS,
+        arkonian: process.env.BLOCKCHAIN_POLYGON_ARKONIAN_ADDRESS,
+        store: process.env.BLOCKCHAIN_POLYGON_ARK_STORE_ADDRESS,
+        rewards: process.env.BLOCKCHAIN_POLYGON_ARK_REWARDS_ADDRESS,
+        chest: process.env.BLOCKCHAIN_POLYGON_MYSTERY_CHEST_ADDRESS
+      }
     }
   },
   solidity: {
@@ -87,7 +93,7 @@ module.exports = {
   },
   paths: {
     sources: './contracts',
-    tests: './test',
+    tests: './tests',
     cache: './cache',
     artifacts: './artifacts'
   },

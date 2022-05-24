@@ -92,9 +92,10 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
   /**
    * @dev Allows anyone to invest during the current stage for an `amount`
    */
-  function buy(address beneficiary, uint256 amount) 
-    external payable nonReentrant 
-  {
+  function buy(
+    address beneficiary, 
+    uint256 amount
+  ) external payable nonReentrant {
     if (!purchaseable(amount)
       //calculate eth amount = 1000 * 0.000005 ether
       || msg.value < ((amount * currentTokenPrice) / 1 ether)
@@ -127,5 +128,12 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
    */
   function setVestedDate(uint256 date) external onlyOwner {
     currentVestedDate = date;
+  }
+
+  /**
+   * @dev Sends the entire contract balance to a `recipient`. 
+   */
+  function withdraw(address recipient) external nonReentrant onlyOwner {
+    Address.sendValue(payable(recipient), address(this).balance);
   }
 }

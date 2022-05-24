@@ -183,8 +183,9 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
     uint256 startDate, 
     uint256 endDate
   ) public onlyRole(VESTER_ROLE) {
-    // if no amount or refunding
-    if (amount == 0) revert InvalidCall();
+    // if no amount or already vesting
+    if (amount == 0 || vesting[beneficiary].total > 0) 
+      revert InvalidCall();
     //now add to the beneficiary
     vesting[beneficiary] = Vesting(startDate, endDate, amount, 0);
   }

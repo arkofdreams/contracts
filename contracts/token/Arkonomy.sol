@@ -79,16 +79,19 @@ contract Arkonomy is
    * @dev Grants `DEFAULT_ADMIN_ROLE` to the account that deploys the 
    * contract.
    */
-  function initialize(IERC20CappedUpgradeable token, address treasury) public initializer {
+  function initialize(
+    IERC20CappedUpgradeable token, 
+    address treasury, 
+    address admin
+  ) public initializer {
     __AccessControl_init();
     __ReentrancyGuard_init();
     __Pausable_init();
     __UUPSUpgradeable_init();
 
     //set up roles for the contract creator
-    address sender = _msgSender();
-    _setupRole(DEFAULT_ADMIN_ROLE, sender);
-    _setupRole(PAUSER_ROLE, sender);
+    _setupRole(DEFAULT_ADMIN_ROLE, admin);
+    _setupRole(PAUSER_ROLE, admin);
     //set the $AOD addresses
     TOKEN = token;
     TREASURY = treasury;
@@ -161,9 +164,10 @@ contract Arkonomy is
   /**
    * @dev Buys `amount` of $AOD 
    */
-  function buy(address recipient, uint256 amount) 
-    public payable whenNotPaused nonReentrant
-  {
+  function buy(
+    address recipient, 
+    uint256 amount
+  ) public payable whenNotPaused nonReentrant {
     uint256 value = _sellingFor(amount, balanceEther() - msg.value);
     if (value == 0 
       || msg.value < value
@@ -183,16 +187,22 @@ contract Arkonomy is
   /**
    * @dev Sells `amount` of $AOD 
    */
-  function sell(address recipient, uint256 amount) 
-    public whenNotPaused nonReentrant 
-  {
+  function sell(
+    address recipient, 
+    uint256 amount
+  ) public whenNotPaused nonReentrant {
     //check allowance
     if(TOKEN.allowance(recipient, address(this)) < amount) 
       revert InvalidAmount();
     //send the ether
     AddressUpgradeable.sendValue(payable(recipient), buyingFor(amount));
     //now accept the payment
-    SafeERC20Upgradeable.safeTransferFrom(TOKEN, recipient, address(this), amount);
+    SafeERC20Upgradeable.safeTransferFrom(
+      TOKEN, 
+      recipient, 
+      address(this), 
+      amount
+    );
     emit ERC20Received(recipient, amount);
   }
 

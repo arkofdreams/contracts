@@ -41,16 +41,8 @@ contract ArkoniaToken is
   // ============ Constants ============
   
   //all custom roles
-  bytes32 public constant BANNER_ROLE = keccak256("BANNER_ROLE");
   bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-
-  // ============ Storage ============
-
-  //mapping of address to blacklisted
-  mapping(address => bool) private _blacklisted;
-  //blacklist event
-  event Blacklist(address indexed blacklisted, bool yesno);
 
   // ============ Deploy ============
 
@@ -58,7 +50,6 @@ contract ArkoniaToken is
    * @dev Sets the name and symbol. Sets the fixed supply.
    * Grants `DEFAULT_ADMIN_ROLE` to the specified admin.
    */
-  
   function initialize(address admin) public initializer {
     __ERC20_init("Arkonia", "AOD");
     __ERC20Capped_init(1000000000 ether);
@@ -78,32 +69,12 @@ contract ArkoniaToken is
   /**
    * @dev Required method for upgradeable contracts
    */
-
   // solhint-disable-next-line no-empty-blocks
-  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
-
-  // ============ Read Methods ============
-
-  /**
-   * @dev Returns true `badactor` is blacklisted
-   */
-  function isBlacklisted(address badactor) 
-    external view virtual returns (bool) 
-  {
-    return _blacklisted[badactor];
-  }
+  function _authorizeUpgrade(
+    address newImplementation
+  ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Write Methods ============
-
-  /**
-   * @dev Blacklists or whitelists a `badactor` from
-   * sending or receiving funds
-   */
-  function blacklist(address badactor, bool yesno) 
-    external virtual onlyRole(BANNER_ROLE) 
-  {
-    _blacklist(badactor, yesno);
-  }
 
   /**
    * @dev Creates `amount` new tokens for `to`.
@@ -142,22 +113,13 @@ contract ArkoniaToken is
     address to,
     uint256 amount
   ) internal virtual override {
-    if (_blacklisted[to]) revert InvalidCall();
-
+    //if the sender is not a minter
     if (!hasRole(MINTER_ROLE, _msgSender()) 
-      && !hasRole(MINTER_ROLE, from)
+      //and is paused
       && paused()
     ) revert InvalidCall();
 
     super._beforeTokenTransfer(from, to, amount);
-  }
-
-  /**
-   * @dev Internally blacklists or whitelists a `badactor`
-   */
-  function _blacklist(address actor, bool bad) internal virtual {
-    _blacklisted[actor] = bad;
-    emit Blacklist(actor, bad);
   }
 
   /**
