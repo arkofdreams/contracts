@@ -221,7 +221,7 @@ contract Treasury is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external virtual onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -272,7 +272,7 @@ contract Treasury is
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external virtual onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

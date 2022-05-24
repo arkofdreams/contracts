@@ -131,7 +131,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external virtual onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -144,7 +144,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external virtual onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

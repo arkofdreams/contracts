@@ -53,7 +53,7 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
    *
    * See {ERC20-_burn}.
    */
-  function burn(uint256 amount) public virtual {
+  function burn(uint256 amount) external virtual {
     _burn(_msgSender(), amount);
   }
 
@@ -115,14 +115,14 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external virtual onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external virtual onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
