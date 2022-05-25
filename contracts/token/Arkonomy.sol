@@ -118,7 +118,7 @@ contract Arkonomy is
    * https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
    * functions].
    */
-  receive() external payable virtual {
+  receive() external payable {
     emit DepositReceived(_msgSender(), msg.value);
   }
 
@@ -229,7 +229,7 @@ contract Arkonomy is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() external virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -245,7 +245,7 @@ contract Arkonomy is
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() external virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

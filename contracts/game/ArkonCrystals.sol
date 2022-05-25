@@ -53,7 +53,7 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
    *
    * See {ERC20-_burn}.
    */
-  function burn(uint256 amount) external virtual {
+  function burn(uint256 amount) external {
     _burn(_msgSender(), amount);
   }
 
@@ -68,7 +68,7 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
    * - the caller must have allowance for ``accounts``'s tokens of at least
    * `amount`.
    */
-  function burnFrom(address account, uint256 amount) external virtual {
+  function burnFrom(address account, uint256 amount) external {
     address operator = _msgSender();
     if (!hasRole(BURNER_ROLE, operator)) {
       uint256 currentAllowance = allowance(account, operator);
@@ -115,14 +115,14 @@ contract ArkonCrystals is Pausable, AccessControl, ERC20 {
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() external virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() external virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

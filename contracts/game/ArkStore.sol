@@ -279,14 +279,14 @@ contract ArkStore is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() external virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() external virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

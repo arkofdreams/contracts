@@ -80,7 +80,7 @@ contract ArkoniaToken is
    * @dev Creates `amount` new tokens for `to`.
    */
   function mint(address to, uint256 amount) 
-    external virtual onlyRole(MINTER_ROLE) 
+    external onlyRole(MINTER_ROLE) 
   {
     _mint(to, amount);
   }
@@ -89,7 +89,7 @@ contract ArkoniaToken is
    * @dev Pauses all token transfers.
    */
   function pause() 
-    external virtual onlyRole(PAUSER_ROLE) 
+    external onlyRole(PAUSER_ROLE) 
   {
     _pause();
   }
@@ -98,7 +98,7 @@ contract ArkoniaToken is
    * @dev Unpauses all token transfers.
    */
   function unpause() 
-    external virtual onlyRole(PAUSER_ROLE) 
+    external onlyRole(PAUSER_ROLE) 
   {
     _unpause();
   }

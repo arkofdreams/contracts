@@ -93,7 +93,7 @@ contract MysteryChest is
     uint256 tokenId,
     address recipient,
     bytes calldata proof
-  ) external virtual {
+  ) external {
     //make sure the minter signed this off
     require(
       hasRole(
@@ -116,7 +116,7 @@ contract MysteryChest is
    * @dev Allows admin to mint
    */
   function mint(uint256 tokenId, address recipient) 
-    external virtual onlyRole(MINTER_ROLE) 
+    external onlyRole(MINTER_ROLE) 
   {
     //mint first and wait for errors
     _safeMint(recipient, tokenId, "");
@@ -131,7 +131,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function pause() external virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -144,7 +144,7 @@ contract MysteryChest is
    *
    * - the caller must have the `PAUSER_ROLE`.
    */
-  function unpause() external virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
