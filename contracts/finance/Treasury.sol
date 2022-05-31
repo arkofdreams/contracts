@@ -113,7 +113,7 @@ contract Treasury is
    * https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
    * functions].
    */
-  receive() external payable virtual {
+  receive() external payable {
     emit FundsReceived(_msgSender(), msg.value);
   }
 
@@ -137,7 +137,7 @@ contract Treasury is
   /**
    * @dev Determine the tier information of a given amount
    */
-  function tierInfo(TX memory transaction) public view virtual returns(
+  function tierInfo(TX memory transaction) public pure returns(
     uint256 tier,
     uint256 required,
     uint256 cooldown
@@ -148,7 +148,7 @@ contract Treasury is
   /**
    * @dev Determine the tier information of a given amount
    */
-  function tierInfoByAmount(uint256 amount) public view virtual returns(
+  function tierInfoByAmount(uint256 amount) public pure returns(
     uint256 tier,
     uint256 required,
     uint256 cooldown
@@ -170,7 +170,7 @@ contract Treasury is
   /**
    * @dev Approves a transaction
    */
-  function approve(uint256 id) public virtual onlyRole(APPROVER_ROLE) {
+  function approve(uint256 id) public onlyRole(APPROVER_ROLE) {
     if (paused()
       //check if tx exists
       || txs[id].amount == 0
@@ -199,7 +199,7 @@ contract Treasury is
   /**
    * @dev Cancels a transaction request
    */
-  function cancel(uint256 id) public virtual onlyRole(REQUESTER_ROLE) {
+  function cancel(uint256 id) public onlyRole(REQUESTER_ROLE) {
     if (paused()
       //check if tx exists
       || txs[id].amount == 0
@@ -221,7 +221,7 @@ contract Treasury is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -232,7 +232,7 @@ contract Treasury is
     uint256 id, 
     address beneficiary, 
     uint256 amount
-  ) public virtual onlyRole(REQUESTER_ROLE) {
+  ) public onlyRole(REQUESTER_ROLE) {
     if (paused()
       //check if amount is more than the balance
       || amount > address(this).balance
@@ -272,7 +272,7 @@ contract Treasury is
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
