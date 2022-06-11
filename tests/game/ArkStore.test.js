@@ -41,7 +41,16 @@ function voucher(recipient, tokenId, quantity) {
   );
 }
 
-describe('ArkStore Tests', function () {
+function chestProof(recipient, chest, tokenIds) {
+  return Buffer.from(
+    ethers.utils
+      .solidityKeccak256(['string', 'address', 'address', 'uint256[]'], ['redeemItemFromChest', recipient, chest, tokenIds])
+      .slice(2),
+    'hex'
+  );
+}
+
+describe.only('ArkStore Tests', function () {
   before(async function () {
     const signers = await ethers.getSigners();
     this.contractURI = 'https://ipfs.io/ipfs/Qm123abc';
@@ -49,9 +58,11 @@ describe('ArkStore Tests', function () {
 
     const token = await deploy('ArkonCrystals', signers[0].address);
     const store = await deploy('ArkStore', this.contractURI, this.baseURI, signers[0].address);
+    const chest = await deploy('MysteryChest', this.contractURI, this.baseURI, signers[0].address);
 
     await bindContract('withStore', 'ArkStore', store, signers);
     await bindContract('withToken', 'ArkonCrystals', token, signers);
+    await bindContract('withChest', 'MysteryChest', chest, signers);
 
     const [admin, holder1, holder2] = signers;
 
@@ -64,6 +75,9 @@ describe('ArkStore Tests', function () {
     await admin.withStore.grantRole(getRole('FUNDER_ROLE'), admin.address);
     await admin.withStore.grantRole(getRole('MINTER_ROLE'), admin.address);
     await admin.withStore.grantRole(getRole('CURATOR_ROLE'), admin.address);
+
+    //allow admin to mint
+    await admin.withChest.grantRole(getRole('MINTER_ROLE'), admin.address);
 
     this.signers = { admin, holder1, holder2 };
   });
@@ -199,4 +213,25 @@ describe('ArkStore Tests', function () {
       ) - startingBalance
     ).to.be.above(0.13);
   });
+
+  it('should redeem iterm from chest', async function () {
+    const { admin, holder1 } = this.signers;
+
+    await admin.withChest.mint(7, admin.address);
+    await admin.withChest.mint(8, admin.address);
+    await admin.withChest.mint(9, admin.address);
+
+    //approve arkstore to burn tokens from chest
+    await admin.withChest.setApprovalForAll(admin.withStore.address, true);
+
+    const message = chestProof(holder1.address, admin.withChest.address, [7, 8, 9]);
+    const signature = await admin.signMessage(message);
+
+    await admin.withStore.redeemItemFromChest(
+      holder1.address, 
+      admin.withChest.address, 
+      [7, 8, 9], 
+      signature
+    );
+  })
 });
