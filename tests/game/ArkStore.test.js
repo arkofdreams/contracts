@@ -50,7 +50,7 @@ function chestProof(recipient, chest, tokenIds) {
   );
 }
 
-describe.only('ArkStore Tests', function () {
+describe('ArkStore Tests', function () {
   before(async function () {
     const signers = await ethers.getSigners();
     this.contractURI = 'https://ipfs.io/ipfs/Qm123abc';
