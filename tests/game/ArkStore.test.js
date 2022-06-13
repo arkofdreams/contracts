@@ -214,7 +214,7 @@ describe('ArkStore Tests', function () {
     ).to.be.above(0.13);
   });
 
-  it('should redeem iterm from chest', async function () {
+  it('should redeem item from chest', async function () {
     const { admin, holder1 } = this.signers;
 
     await admin.withChest.mint(7, admin.address);
