@@ -78,8 +78,8 @@ contract ArkoniaToken is
   // ============ Write Methods ============
 
   /**
-   * @dev Destroys `amount` tokens from `account`, deducting from the caller's
-   * allowance.
+   * @dev Destroys `amount` tokens from `account`, deducting from the 
+   * caller's allowance.
    */
   function burnFrom(
     address account, 
@@ -95,27 +95,24 @@ contract ArkoniaToken is
   /**
    * @dev Creates `amount` new tokens for `to`.
    */
-  function mint(address to, uint256 amount) 
-    external virtual onlyRole(_MINTER_ROLE) 
-  {
+  function mint(
+    address to, 
+    uint256 amount
+  ) external onlyRole(_MINTER_ROLE) {
     _mint(to, amount);
   }
 
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() 
-    external virtual onlyRole(_PAUSER_ROLE) 
-  {
+  function pause() external onlyRole(_PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() 
-    external virtual onlyRole(_PAUSER_ROLE) 
-  {
+  function unpause() external onlyRole(_PAUSER_ROLE) {
     _unpause();
   }
 
@@ -141,9 +138,10 @@ contract ArkoniaToken is
   /**
    * @dev See {ERC20-_mint}.
    */
-  function _mint(address account, uint256 amount) 
-    internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) 
-  {
+  function _mint(
+    address account, 
+    uint256 amount
+  ) internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) {
     super._mint(account, amount);
   }
 }

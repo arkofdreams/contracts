@@ -118,7 +118,7 @@ contract Arkonomy is
    * https://solidity.readthedocs.io/en/latest/contracts.html#fallback-function[fallback
    * functions].
    */
-  receive() external payable virtual {
+  receive() external payable {
     emit DepositReceived(_msgSender(), msg.value);
   }
 
@@ -127,7 +127,9 @@ contract Arkonomy is
    */
 
   // solhint-disable-next-line no-empty-blocks
-  function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
+  function _authorizeUpgrade(
+    address newImplementation
+  ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Read Methods ============
 
@@ -167,7 +169,7 @@ contract Arkonomy is
   function buy(
     address recipient, 
     uint256 amount
-  ) public payable whenNotPaused nonReentrant {
+  ) external payable whenNotPaused nonReentrant {
     uint256 value = _sellingFor(amount, balanceEther() - msg.value);
     if (value == 0 
       || msg.value < value
@@ -190,7 +192,7 @@ contract Arkonomy is
   function sell(
     address recipient, 
     uint256 amount
-  ) public whenNotPaused nonReentrant {
+  ) external whenNotPaused nonReentrant {
     //check allowance
     if(TOKEN.allowance(recipient, address(this)) < amount) 
       revert InvalidAmount();
@@ -212,7 +214,7 @@ contract Arkonomy is
    * @dev Sets the buy for percent
    */
   function buyFor(uint16 percent) 
-    public payable onlyRole(DEFAULT_ADMIN_ROLE) 
+    external payable onlyRole(DEFAULT_ADMIN_ROLE) 
   {
     _buyFor = percent;
   }
@@ -221,7 +223,7 @@ contract Arkonomy is
    * @dev Sets the interest
    */
   function interest(uint16 percent) 
-    public payable onlyRole(DEFAULT_ADMIN_ROLE) 
+    external payable onlyRole(DEFAULT_ADMIN_ROLE) 
   {
     _interest = percent;
   }
@@ -229,7 +231,7 @@ contract Arkonomy is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
@@ -237,7 +239,7 @@ contract Arkonomy is
    * @dev Sets the sell for percent
    */
   function sellFor(uint16 percent) 
-    public payable onlyRole(DEFAULT_ADMIN_ROLE) 
+    external payable onlyRole(DEFAULT_ADMIN_ROLE) 
   {
     _sellFor = percent;
   }
@@ -245,7 +247,7 @@ contract Arkonomy is
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 

@@ -149,7 +149,9 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
    *
    * Emits a {TokensReleased} event.
    */
-  function release(address beneficiary) public nonReentrant {
+  function release(address beneficiary) external nonReentrant {
+    //if paused or not unlocked yet
+    if (paused()) revert InvalidCall();
     //releasable calc by total releaseable amount - amount already released
     uint256 releasable = totalReleasableAmount(
       beneficiary, 
@@ -177,14 +179,14 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public onlyRole(_PAUSER_ROLE) {
+  function pause() external onlyRole(_PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public onlyRole(_PAUSER_ROLE) {
+  function unpause() external onlyRole(_PAUSER_ROLE) {
     _unpause();
   }
 
@@ -213,7 +215,7 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
     uint256 amount, 
     uint256 startDate, 
     uint256 endDate
-  ) public onlyRole(_VESTER_ROLE) {
+  ) external onlyRole(_VESTER_ROLE) {
     // if no amount or already vesting
     if (amount == 0 || vesting[beneficiary].total > 0) 
       revert InvalidCall();

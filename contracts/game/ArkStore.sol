@@ -40,6 +40,13 @@ interface IERC20Burnable is IERC20 {
   function burnFrom(address account, uint256 amount) external;
 }
 
+interface IERC721Burnable {
+  /**
+   * @dev Destroys token from `owner`.
+   */
+  function burn(uint256 tokenId) external;
+}
+
 // ============ Contract ============
 
 /**
@@ -279,14 +286,14 @@ contract ArkStore is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() external onlyRole(PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() external onlyRole(PAUSER_ROLE) {
     _unpause();
   }
 
@@ -316,6 +323,31 @@ contract ArkStore is
     external nonReentrant onlyRole(FUNDER_ROLE)
   {
     SafeERC20.safeTransfer(erc20, recipient, amount);
+  }
+
+  /**
+   * @dev Allows admin to redeem a token randomly from the chest.
+   */
+  function redeemItemFromChest(
+    address to,
+    address chest,
+    uint256[] memory tokenIds, 
+    bytes memory proof
+  ) external nonReentrant onlyRole(MINTER_ROLE) {
+    //make sure the minter signed this off
+    if (!hasRole(MINTER_ROLE, ECDSA.recover(
+      ECDSA.toEthSignedMessageHash(
+        keccak256(abi.encodePacked("redeemItemFromChest", to, chest, tokenIds))
+      ),
+      proof
+    ))) revert InvalidCall();
+    uint256 randomIdx = uint256(keccak256(
+      abi.encodePacked(block.difficulty, block.timestamp, tokenIds.length)
+    )) % tokenIds.length;
+    //make sure arkstore is already set as operator by the owner
+    IERC721Burnable(chest).burn(tokenIds[randomIdx]);
+    //we are okay to mint
+    _mint(to, tokenIds[randomIdx], 1, "");
   }
 
   // ============ Internal Methods ============
