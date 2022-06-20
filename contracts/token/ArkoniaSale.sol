@@ -84,7 +84,19 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
       //if no limit
       && currentTokenLimit > 0 
       //if the amount exceeds the token limit
-      || (currentTokenAllocated + amount) <= currentTokenLimit;
+      && (currentTokenAllocated + amount) <= currentTokenLimit;
+  }
+
+  /**
+   * @dev Returns true if can buy
+   */
+  function info() public view returns(uint256, uint256, uint256, uint256) {
+    return (
+      currentTokenPrice, 
+      currentTokenLimit, 
+      currentTokenAllocated, 
+      currentVestedDate
+    );
   }
 
   // ============ Write Methods ============

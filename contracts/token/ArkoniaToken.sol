@@ -41,8 +41,9 @@ contract ArkoniaToken is
   // ============ Constants ============
   
   //all custom roles
-  bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 private constant _BURNER_ROLE = keccak256("BURNER_ROLE");
+  bytes32 private constant _MINTER_ROLE = keccak256("MINTER_ROLE");
+  bytes32 private constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   // ============ Deploy ============
 
@@ -77,10 +78,25 @@ contract ArkoniaToken is
   // ============ Write Methods ============
 
   /**
+   * @dev Destroys `amount` tokens from `account`, deducting from the caller's
+   * allowance.
+   */
+  function burnFrom(
+    address account, 
+    uint256 amount
+  ) public virtual override {
+    if (hasRole(_BURNER_ROLE, _msgSender())) {
+      _burn(account, amount);
+    } else {
+      super.burnFrom(account, amount);
+    }
+  }
+
+  /**
    * @dev Creates `amount` new tokens for `to`.
    */
   function mint(address to, uint256 amount) 
-    external virtual onlyRole(MINTER_ROLE) 
+    external virtual onlyRole(_MINTER_ROLE) 
   {
     _mint(to, amount);
   }
@@ -89,7 +105,7 @@ contract ArkoniaToken is
    * @dev Pauses all token transfers.
    */
   function pause() 
-    external virtual onlyRole(PAUSER_ROLE) 
+    external virtual onlyRole(_PAUSER_ROLE) 
   {
     _pause();
   }
@@ -98,7 +114,7 @@ contract ArkoniaToken is
    * @dev Unpauses all token transfers.
    */
   function unpause() 
-    external virtual onlyRole(PAUSER_ROLE) 
+    external virtual onlyRole(_PAUSER_ROLE) 
   {
     _unpause();
   }
@@ -114,7 +130,7 @@ contract ArkoniaToken is
     uint256 amount
   ) internal virtual override {
     //if the sender is not a minter
-    if (!hasRole(MINTER_ROLE, _msgSender()) 
+    if (!hasRole(_MINTER_ROLE, _msgSender()) 
       //and is paused
       && paused()
     ) revert InvalidCall();

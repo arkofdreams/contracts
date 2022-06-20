@@ -61,9 +61,9 @@ contract Treasury is
   // ============ Constants ============
 
   //custom roles
-  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  bytes32 public constant APPROVER_ROLE = keccak256("APPROVER_ROLE");
-  bytes32 public constant REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
+  bytes32 private constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 private constant _APPROVER_ROLE = keccak256("APPROVER_ROLE");
+  bytes32 private constant _REQUESTER_ROLE = keccak256("REQUESTER_ROLE");
   //the minimum approvals needed
   uint256 public constant MINIMUM_APPROVALS = 2;
   //the minimum amount that can be requested
@@ -99,7 +99,7 @@ contract Treasury is
 
     //set up roles for admin
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
-    _setupRole(PAUSER_ROLE, admin);
+    _setupRole(_PAUSER_ROLE, admin);
   }
 
   /**
@@ -170,7 +170,7 @@ contract Treasury is
   /**
    * @dev Approves a transaction
    */
-  function approve(uint256 id) public virtual onlyRole(APPROVER_ROLE) {
+  function approve(uint256 id) public virtual onlyRole(_APPROVER_ROLE) {
     if (paused()
       //check if tx exists
       || txs[id].amount == 0
@@ -199,7 +199,7 @@ contract Treasury is
   /**
    * @dev Cancels a transaction request
    */
-  function cancel(uint256 id) public virtual onlyRole(REQUESTER_ROLE) {
+  function cancel(uint256 id) public virtual onlyRole(_REQUESTER_ROLE) {
     if (paused()
       //check if tx exists
       || txs[id].amount == 0
@@ -221,7 +221,7 @@ contract Treasury is
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public virtual onlyRole(PAUSER_ROLE) {
+  function pause() public virtual onlyRole(_PAUSER_ROLE) {
     _pause();
   }
 
@@ -232,7 +232,7 @@ contract Treasury is
     uint256 id, 
     address beneficiary, 
     uint256 amount
-  ) public virtual onlyRole(REQUESTER_ROLE) {
+  ) public virtual onlyRole(_REQUESTER_ROLE) {
     if (paused()
       //check if amount is more than the balance
       || amount > address(this).balance
@@ -260,7 +260,7 @@ contract Treasury is
     emit FundsRequested(id);
 
     //if this sender is also an approver
-    if (hasRole(APPROVER_ROLE, _msgSender())) {
+    if (hasRole(_APPROVER_ROLE, _msgSender())) {
       //then approve it
       approve(id);
     }
@@ -272,7 +272,7 @@ contract Treasury is
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public virtual onlyRole(PAUSER_ROLE) {
+  function unpause() public virtual onlyRole(_PAUSER_ROLE) {
     _unpause();
   }
 

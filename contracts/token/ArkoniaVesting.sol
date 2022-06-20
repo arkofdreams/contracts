@@ -61,8 +61,8 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
 
   // ============ Constants ============
 
-  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-  bytes32 public constant VESTER_ROLE = keccak256("VESTER_ROLE");
+  bytes32 private constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
+  bytes32 private constant _VESTER_ROLE = keccak256("VESTER_ROLE");
 
   //this is the contract address for $ARKONIA
   IERC20Mintable public immutable TOKEN;
@@ -71,6 +71,10 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
 
   //mapping of address to Vesting
   mapping(address => Vesting) public vesting;
+  //the total tokens that are allocated
+  uint256 public totalAllocated;
+  //the total tokens that were released
+  uint256 public totalReleased;
 
   // ============ Deploy ============
 
@@ -83,6 +87,8 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
     _setupRole(DEFAULT_ADMIN_ROLE, admin);
     //set the $AOD address
     TOKEN = token;
+    //start off paused
+    _pause();
   }
 
   // ============ Read Methods ============
@@ -91,9 +97,14 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
    * @dev Calculates the amount of tokens that are releasable. 
    * Default implementation is a linear vesting curve.
    */
-  function totalReleasableAmount(address beneficiary, uint64 timestamp) 
-    public view returns (uint256) 
-  {
+  function totalReleasableAmount(
+    address beneficiary, 
+    uint64 timestamp
+  ) public view returns (uint256) {
+    //if paused or not unlocked yet
+    if (paused()) {
+      return 0;
+    }
     uint amount = totalVestedAmount(beneficiary, timestamp);
     return amount - vesting[beneficiary].released;
   }
@@ -102,28 +113,33 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
    * @dev Calculates the amount of tokens that has already vested. 
    * Default implementation is a linear vesting curve.
    */
-  function totalVestedAmount(address beneficiary, uint64 timestamp) 
-    public view returns (uint256) 
-  {
+  function totalVestedAmount(
+    address beneficiary, 
+    uint64 timestamp
+  ) public view returns (uint256) {
     //if vesting date is not set
-    if (vesting[beneficiary].endDate == 0) {
+    if (vesting[beneficiary].endDate == 0 
+      //or the timestamp is less than the start date
+      || timestamp < vesting[beneficiary].startDate
+    ) {
       //nothing can be vested
       return 0;
-    }
-
     //if time now is more than the vested date
-    if (timestamp > vesting[beneficiary].endDate) {
+    } else if (timestamp > vesting[beneficiary].endDate) {
       //release all the tokens
       return vesting[beneficiary].total;
     }
 
-    //determine the vesting duration in seconds
-    uint256 duration = vesting[beneficiary].endDate - vesting[beneficiary].startDate;
-    //determine the elapsed time that has passed
-    uint256 elapsed = timestamp - vesting[beneficiary].startDate;
-    //this is the max possible tokens we can release
-    //total vesting tokens * elapsed / duration
-    return (vesting[beneficiary].total * elapsed) / duration;
+    //the above cases cover the underflows
+    unchecked {
+      //determine the vesting duration in seconds
+      uint256 duration = vesting[beneficiary].endDate - vesting[beneficiary].startDate;
+      //determine the elapsed time that has passed
+      uint256 elapsed = timestamp - vesting[beneficiary].startDate;
+      //this is the max possible tokens we can release
+      //total vesting tokens * elapsed / duration
+      return (vesting[beneficiary].total * elapsed) / duration;
+    }
   }
 
   // ============ Write Methods ============
@@ -134,9 +150,6 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
    * Emits a {TokensReleased} event.
    */
   function release(address beneficiary) public nonReentrant {
-    //if paused or not unlocked yet
-    if (paused()) revert InvalidCall();
-
     //releasable calc by total releaseable amount - amount already released
     uint256 releasable = totalReleasableAmount(
       beneficiary, 
@@ -145,6 +158,7 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
     if (releasable == 0) revert InvalidCall();
     //already account for the new tokens
     vesting[beneficiary].released += releasable;
+    totalReleased += releasable;
     //next mint tokens
     address(TOKEN).functionCall(
       abi.encodeWithSelector(
@@ -163,15 +177,32 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
   /**
    * @dev Pauses all token transfers.
    */
-  function pause() public onlyRole(PAUSER_ROLE) {
+  function pause() public onlyRole(_PAUSER_ROLE) {
     _pause();
   }
 
   /**
    * @dev Unpauses all token transfers.
    */
-  function unpause() public onlyRole(PAUSER_ROLE) {
+  function unpause() public onlyRole(_PAUSER_ROLE) {
     _unpause();
+  }
+
+  /**
+   * @dev Allow an admin to manually update a `beneficiary`'s vesting
+   */
+  function update(
+    address beneficiary, 
+    uint256 amount, 
+    uint256 startDate, 
+    uint256 endDate
+  ) public onlyRole(_VESTER_ROLE) {
+    //less from total allocated
+    totalAllocated -= vesting[beneficiary].total;
+    //now add to the beneficiary
+    vesting[beneficiary] = Vesting(startDate, endDate, amount, 0);
+    //add to total allocated
+    totalAllocated += amount;
   }
 
   /**
@@ -182,11 +213,13 @@ contract ArkoniaVesting is Pausable, AccessControl, ReentrancyGuard {
     uint256 amount, 
     uint256 startDate, 
     uint256 endDate
-  ) public onlyRole(VESTER_ROLE) {
+  ) public onlyRole(_VESTER_ROLE) {
     // if no amount or already vesting
     if (amount == 0 || vesting[beneficiary].total > 0) 
       revert InvalidCall();
     //now add to the beneficiary
     vesting[beneficiary] = Vesting(startDate, endDate, amount, 0);
+    //add to total allocated
+    totalAllocated += amount;
   }
 }

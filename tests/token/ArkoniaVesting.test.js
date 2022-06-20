@@ -64,6 +64,7 @@ describe('ArkoniaVesting Tests', function () {
 
     await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.vesting.address);
     await owner.withVesting.grantRole(getRole('VESTER_ROLE'), owner.address);
+    await owner.withVesting.grantRole(getRole('PAUSER_ROLE'), owner.address);
 
     this.contracts.vesting = owner.withVesting.address;
 
@@ -130,6 +131,8 @@ describe('ArkoniaVesting Tests', function () {
 
   it('Should release', async function () {
     const { owner, investor1, investor2 } = this.signers
+
+    await owner.withVesting.unpause()
 
     await owner.withVesting.release(investor1.address)
     expect(await owner.withToken.balanceOf(investor1.address)).to.be.above(
