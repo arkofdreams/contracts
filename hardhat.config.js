@@ -47,21 +47,37 @@ module.exports = {
       // We have to set this before all event dates e.g. private sale, presale
       initialDate: new Date('January 1, 2021 00:00:00').toString()
     },
+    rinkeby: {
+      url: 'https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+      chainId: 4,
+      scanner: 'https://rinkeby.etherscan.io',
+      opensea: 'https://testnets.opensea.io',
+      accounts: [process.env.BLOCKCHAIN_RINKEBY_PRIVATE_KEY],
+      contracts: {
+        token: '0x84C8a3F7ca005975C8303E5a9b6817Aaa29e732E',
+        vesting: '0x251d30D2B81FDdd3e6BEA1F79726F391185bd2d0',
+        sale: '0xE4616cbc152A2a5890c65Aef56aAe9f3962cE48C'
+      }
+    },
     mumbai: {
-      url: "https://matic-mumbai.chainstacklabs.com",
+      url: 'https://matic-mumbai.chainstacklabs.com',
       scanner: 'https://mumbai.polygonscan.com',
       accounts: [process.env.BLOCKCHAIN_MUMBAI_PRIVATE_KEY],
       contracts: {
-        treasury: process.env.BLOCKCHAIN_MUMBAI_TREASURY_ADDRESS,
-        token: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_TOKEN_ADDRESS,
-        vesting: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_VESTING_ADDRESS,
-        sale: process.env.BLOCKCHAIN_MUMBAI_ARKONIA_SALE_ADDRESS,
-        arkonomy: process.env.BLOCKCHAIN_MUMBAI_ARKONONMY_ADDRESS,
-        crystal: process.env.BLOCKCHAIN_MUMBAI_ARKON_CRYSTALS_ADDRESS,
-        arkonian: process.env.BLOCKCHAIN_MUMBAI_ARKONIAN_ADDRESS,
-        store: process.env.BLOCKCHAIN_MUMBAI_ARK_STORE_ADDRESS,
-        rewards: process.env.BLOCKCHAIN_MUMBAI_ARK_REWARDS_ADDRESS,
-        chest: process.env.BLOCKCHAIN_MUMBAI_MYSTERY_CHEST_ADDRESS
+        crystals: '0xf02270676e5f7f23980653610A45F68BA95AfA92',
+        arkonian: '0x144208110AB962C16DCce4D69C22Af0bFC1EB2F2',
+        store: '0x2d7e2eDeD73cF2955D3d30f7b09A092a3Ed30Ac8',
+        rewards: '0xae616B8afE05107CEfac41958798e4F8548Fff38',
+        chest: '0xA7E960c627fC8Db49B7151fD9F549BC15231EF4a'
+      }
+    },
+    ethereum: {
+      url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      chainId: 1,
+      scanner: 'https://etherscan.io',
+      opensea: 'https://opensea.io',
+      accounts: [process.env.BLOCKCHAIN_ETHEREUM_PRIVATE_KEY],
+      contracts: {
       }
     },
     polygon: {
@@ -69,16 +85,6 @@ module.exports = {
       scanner: 'https://polygonscan.com',
       accounts: [process.env.BLOCKCHAIN_POLYGON_PRIVATE_KEY],
       contracts: {
-        treasury: process.env.BLOCKCHAIN_POLYGON_TREASURY_ADDRESS,
-        token: process.env.BLOCKCHAIN_POLYGON_ARKONIA_TOKEN_ADDRESS,
-        vesting: process.env.BLOCKCHAIN_POLYGON_ARKONIA_VESTING_ADDRESS,
-        sale: process.env.BLOCKCHAIN_POLYGON_ARKONIA_SALE_ADDRESS,
-        arkonomy: process.env.BLOCKCHAIN_POLYGON_ARKONONMY_ADDRESS,
-        crystal: process.env.BLOCKCHAIN_POLYGON_ARKON_CRYSTALS_ADDRESS,
-        arkonian: process.env.BLOCKCHAIN_POLYGON_ARKONIAN_ADDRESS,
-        store: process.env.BLOCKCHAIN_POLYGON_ARK_STORE_ADDRESS,
-        rewards: process.env.BLOCKCHAIN_POLYGON_ARK_REWARDS_ADDRESS,
-        chest: process.env.BLOCKCHAIN_POLYGON_MYSTERY_CHEST_ADDRESS
       }
     }
   },

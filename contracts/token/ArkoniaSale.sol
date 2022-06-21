@@ -13,7 +13,7 @@ pragma solidity ^0.8.0;
 // http://www.arkofdreams.io/
 //
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -51,8 +51,11 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
 
   // ============ Storage ============
 
-  //the MATIC price per token
+  //the ETH price per token
   uint256 public currentTokenPrice;
+  //mapping of ERC20 token to price
+  mapping(IERC20 => uint256) private _currentERC20Price;
+
   //the token limit that can be sold
   uint256 public currentTokenLimit;
   //the total tokens that are currently allocated
@@ -73,6 +76,22 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
 
   // ============ Read Methods ============
 
+  function currentERC20Price(IERC20 token) external view returns(uint256) {
+    return _currentERC20Price[token];
+  }
+
+  /**
+   * @dev Returns true if can buy
+   */
+  function info() external view returns(uint256, uint256, uint256, uint256) {
+    return (
+      currentTokenPrice, 
+      currentTokenLimit, 
+      currentTokenAllocated, 
+      currentVestedDate
+    );
+  }
+
   /**
    * @dev Returns true if can buy
    */
@@ -85,18 +104,6 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
       && currentTokenLimit > 0 
       //if the amount exceeds the token limit
       && (currentTokenAllocated + amount) <= currentTokenLimit;
-  }
-
-  /**
-   * @dev Returns true if can buy
-   */
-  function info() public view returns(uint256, uint256, uint256, uint256) {
-    return (
-      currentTokenPrice, 
-      currentTokenLimit, 
-      currentTokenAllocated, 
-      currentVestedDate
-    );
   }
 
   // ============ Write Methods ============
@@ -119,6 +126,34 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
     currentTokenAllocated += amount;
   }
 
+  /**
+   * @dev Allows anyone to invest during the current stage for an `amount`
+   */
+  function buy(
+    IERC20 token,
+    address beneficiary, 
+    uint256 amount
+  ) external nonReentrant {
+    //if not purchaseable
+    if (!purchaseable(amount)) revert InvalidCall();
+    //now accept the payment
+    //this will error if no allowance
+    SafeERC20.safeTransferFrom(
+      token, 
+      //from
+      beneficiary, 
+      //to
+      address(this), 
+      //calculate token amount
+      (amount * _currentERC20Price[token]) / 1 ether
+    );
+
+    //last start vesting
+    VESTING.vest(beneficiary, amount, block.timestamp, currentVestedDate);
+    //add to allocated
+    currentTokenAllocated += amount;
+  }
+
   // ============ Admin Methods ============
 
   /**
@@ -129,10 +164,17 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
   }
 
   /**
-   * @dev Sets the current token price
+   * @dev Sets the current token price (ETH)
    */
   function setTokenPrice(uint256 price) external onlyOwner {
     currentTokenPrice = price;
+  }
+
+  /**
+   * @dev Sets the current token price (ERC20)
+   */
+  function setTokenPrice(IERC20 token, uint256 price) external onlyOwner {
+    _currentERC20Price[token] = price;
   }
 
   /**

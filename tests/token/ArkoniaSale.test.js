@@ -27,7 +27,7 @@ async function deployProxy(name, ...params) {
   return contract;
 }
 
-async function getSigners(token, vesting, sale) {
+async function getSigners(token, vesting, sale, usdc) {
   //get the signers
   const signers = await ethers.getSigners();
   //attach contracts
@@ -35,10 +35,12 @@ async function getSigners(token, vesting, sale) {
     const Token = await ethers.getContractFactory('ArkoniaToken', signers[i]);
     const Vesting = await ethers.getContractFactory('ArkoniaVesting', signers[i]);
     const Sale = await ethers.getContractFactory('ArkoniaSale', signers[i]);
+    const Usdc = await ethers.getContractFactory('MockERC20USDC', signers[i]);
 
     signers[i].withToken = await Token.attach(token.address);
     signers[i].withVesting = await Vesting.attach(vesting.address);
     signers[i].withSale = await Sale.attach(sale.address);
+    signers[i].withUSDC = await Usdc.attach(usdc.address);
   }
 
   return signers;
@@ -60,20 +62,23 @@ describe('ArkoniaSale Tests', function () {
 
     // ArkoniaToken is upgradeable so we used deployProxy instead
     this.contracts.token = await deployProxy('ArkoniaToken', signers[0].address);
-
     this.contracts.vesting = await deploy('ArkoniaVesting', this.contracts.token.address, signers[0].address);
     this.contracts.sale = await deploy('ArkoniaSale', this.contracts.token.address, this.contracts.vesting.address);
+    this.contracts.usdc = await deploy('MockERC20USDC')
 
     const [owner, investor1, investor2, investor3, investor4] = await getSigners(
       this.contracts.token,
       this.contracts.vesting,
-      this.contracts.sale
+      this.contracts.sale,
+      this.contracts.usdc
     );
 
     await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.sale.address);
     await owner.withToken.grantRole(getRole('MINTER_ROLE'), this.contracts.vesting.address);
     await owner.withVesting.grantRole(getRole('PAUSER_ROLE'), owner.address);
     await owner.withVesting.grantRole(getRole('VESTER_ROLE'), this.contracts.sale.address);
+
+    await owner.withUSDC.mint(investor4.address, ethers.utils.parseEther('25')) //1000 AOD
 
     this.contracts.sale = owner.withSale.address;
 
@@ -90,14 +95,18 @@ describe('ArkoniaSale Tests', function () {
     const { owner, investor1 } = this.signers;
 
     await expect(
-      owner.withSale.buy(investor1.address, ethers.utils.parseEther('100000'), { value: ethers.utils.parseEther('1') })
+      owner.withSale['buy(address,uint256)'](investor1.address, ethers.utils.parseEther('100000'), { value: ethers.utils.parseEther('1') })
     ).to.be.revertedWith('InvalidCall()');
   });
 
   it('Should set the vesting stage', async function () {
     const { owner } = this.signers;
     await owner.withSale.setTokenLimit(ethers.utils.parseEther('1000000'));
-    await owner.withSale.setTokenPrice(ethers.utils.parseEther('0.00001'));
+    await owner.withSale['setTokenPrice(uint256)'](ethers.utils.parseEther('0.00001'));
+    await owner.withSale['setTokenPrice(address,uint256)'](
+      owner.withUSDC.address, 
+      ethers.utils.parseEther('0.025')
+    );
 
     // May 1, 2024 12:00AM GMT
     await owner.withSale.setVestedDate(1714521600);
@@ -108,25 +117,46 @@ describe('ArkoniaSale Tests', function () {
   });
 
   it('Should buy tokens', async function () {
-    const { owner, investor1, investor2, investor3 } = this.signers;
+    const { owner, investor1, investor2, investor3, investor4 } = this.signers;
 
-    await owner.withSale.buy(investor1.address, ethers.utils.parseEther('100000'), {
+    await owner.withSale['buy(address,uint256)'](investor1.address, ethers.utils.parseEther('100000'), {
       value: ethers.utils.parseEther('1')
     });
 
-    expect((await owner.withVesting.vesting(investor1.address)).total).to.equal(ethers.utils.parseEther('100000'));
+    expect(
+      (await owner.withVesting.vesting(investor1.address)).total
+    ).to.equal(ethers.utils.parseEther('100000'));
 
-    await owner.withSale.buy(investor2.address, ethers.utils.parseEther('200000'), {
+    await owner.withSale['buy(address,uint256)'](investor2.address, ethers.utils.parseEther('200000'), {
       value: ethers.utils.parseEther('2')
     });
 
     expect((await owner.withVesting.vesting(investor2.address)).total).to.equal(ethers.utils.parseEther('200000'));
 
-    await owner.withSale.buy(investor3.address, ethers.utils.parseEther('100000'), {
+    await owner.withSale['buy(address,uint256)'](investor3.address, ethers.utils.parseEther('100000'), {
       value: ethers.utils.parseEther('1')
     });
 
-    expect((await owner.withVesting.vesting(investor3.address)).total).to.equal(ethers.utils.parseEther('100000'));
+    expect(
+      (await owner.withVesting.vesting(investor3.address)).total
+    ).to.equal(ethers.utils.parseEther('100000'));
+
+    //approve
+    await investor4.withUSDC.approve(
+      owner.withSale.address,
+      ethers.utils.parseEther('25')
+    )
+
+    //buy
+    await owner.withSale['buy(address,address,uint256)'](
+      owner.withUSDC.address,
+      investor4.address, 
+      ethers.utils.parseEther('1000')
+    );
+
+    expect(
+      (await owner.withVesting.vesting(investor4.address)).total
+    ).to.equal(ethers.utils.parseEther('1000'));
   });
 
   it('Should time travel to May 1, 2024', async function () {

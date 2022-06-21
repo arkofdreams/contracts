@@ -34,14 +34,12 @@ contract ArkoniaToken is
   ContextUpgradeable,
   PausableUpgradeable,
   AccessControlUpgradeable,
-  ERC20BurnableUpgradeable,
   ERC20CappedUpgradeable,
   UUPSUpgradeable
 {
   // ============ Constants ============
   
   //all custom roles
-  bytes32 private constant _BURNER_ROLE = keccak256("BURNER_ROLE");
   bytes32 private constant _MINTER_ROLE = keccak256("MINTER_ROLE");
   bytes32 private constant _PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
@@ -54,7 +52,6 @@ contract ArkoniaToken is
   function initialize(address admin) public initializer {
     __ERC20_init("Arkonia", "AOD");
     __ERC20Capped_init(1000000000 ether);
-    __ERC20Burnable_init();
 
     __Context_init();
     __Pausable_init();
@@ -76,21 +73,6 @@ contract ArkoniaToken is
   ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 
   // ============ Write Methods ============
-
-  /**
-   * @dev Destroys `amount` tokens from `account`, deducting from the 
-   * caller's allowance.
-   */
-  function burnFrom(
-    address account, 
-    uint256 amount
-  ) public virtual override {
-    if (hasRole(_BURNER_ROLE, _msgSender())) {
-      _burn(account, amount);
-    } else {
-      super.burnFrom(account, amount);
-    }
-  }
 
   /**
    * @dev Creates `amount` new tokens for `to`.
@@ -119,7 +101,7 @@ contract ArkoniaToken is
   // ============ Internal Methods ============
 
   /**
-   * @dev Checks blacklist before token transfer
+   * @dev Minters can mint even when paused
    */
   function _beforeTokenTransfer(
     address from,
@@ -133,15 +115,5 @@ contract ArkoniaToken is
     ) revert InvalidCall();
 
     super._beforeTokenTransfer(from, to, amount);
-  }
-
-  /**
-   * @dev See {ERC20-_mint}.
-   */
-  function _mint(
-    address account, 
-    uint256 amount
-  ) internal virtual override(ERC20Upgradeable, ERC20CappedUpgradeable) {
-    super._mint(account, amount);
   }
 }
