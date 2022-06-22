@@ -56,7 +56,8 @@ module.exports = {
       contracts: {
         token: '0x84C8a3F7ca005975C8303E5a9b6817Aaa29e732E',
         vesting: '0x251d30D2B81FDdd3e6BEA1F79726F391185bd2d0',
-        sale: '0xE4616cbc152A2a5890c65Aef56aAe9f3962cE48C'
+        sale: '0xd4A434D53ADD1c5107841D2D0AF942dc3067138c',
+        usdc: '0x781f9c4193488d15435a3973676d033e5c713a9c'
       }
     },
     mumbai: {

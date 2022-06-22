@@ -133,7 +133,7 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
     IERC20 token,
     address beneficiary, 
     uint256 amount
-  ) external nonReentrant {
+  ) external {
     //if not purchaseable
     if (!purchaseable(amount)) revert InvalidCall();
     //now accept the payment
@@ -189,5 +189,12 @@ contract ArkoniaSale is Ownable, ReentrancyGuard {
    */
   function withdraw(address recipient) external nonReentrant onlyOwner {
     Address.sendValue(payable(recipient), address(this).balance);
+  }
+
+  /**
+   * @dev Sends the entire contract balance to a `recipient`. 
+   */
+  function withdraw(IERC20 token, address recipient) external onlyOwner {
+    token.transfer(recipient, token.balanceOf(address(this)));
   }
 }

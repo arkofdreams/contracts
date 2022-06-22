@@ -178,4 +178,30 @@ describe('ArkoniaSale Tests', function () {
     expect(await owner.withToken.balanceOf(investor2.address)).to.equal(ethers.utils.parseEther('200000'));
     expect(await owner.withToken.balanceOf(investor3.address)).to.equal(ethers.utils.parseEther('100000'));
   });
+
+  it('Should withdraw', async function () {
+    const { owner } = this.signers
+
+    const startingBalance = parseFloat(
+      ethers.utils.formatEther(await owner.getBalance())
+    )
+
+    await owner.withSale['withdraw(address)'](owner.address)
+    
+    expect(parseFloat(
+      ethers.utils.formatEther(await owner.getBalance())
+      //also less gas
+    ) - startingBalance).to.be.above(3.99)
+
+    await owner.withSale['withdraw(address,address)'](
+      owner.withUSDC.address, 
+      owner.address
+    )
+
+    expect(parseFloat(
+      ethers.utils.formatEther(
+        await owner.withUSDC.balanceOf(owner.address)
+      )
+    )).to.equal(25)
+  })
 });
